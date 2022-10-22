@@ -25,6 +25,18 @@ func loadEnv() {
 
 func main() {
 	loadEnv()
+	logDir := os.Getenv("log.dir")
+	if logDir != "" {
+		log.SetPrefix("wamper")
+		cloaser := log.SetOutputFolder(logDir)
+		if cloaser == nil {
+			log.Fatal("Unable to sett logdir")
+		}
+		defer cloaser()
+		done := make(chan func())
+		log.StartRotate(done)
+		defer close(done)
+	}
 	serv := web.Init()
 	slack.NewClient(os.Getenv("slack.token"))
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
