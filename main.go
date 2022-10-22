@@ -58,7 +58,7 @@ func main() {
 		nextDay := time.Now().UTC()
 		postTime := 6
 		//Changing to next day if we are passed the post time with a buffer of 10 sec.
-		if nextDay.Hour() > postTime || nextDay.Hour() == postTime-1 && nextDay.Minute() == 59 && nextDay.Second() > 50 {
+		if nextDay.Hour() >= postTime || nextDay.Hour() == postTime-1 && nextDay.Minute() == 59 && nextDay.Second() > 50 {
 			nextDay = nextDay.AddDate(0, 0, 1)
 		}
 		nextDay = time.Date(nextDay.Year(), nextDay.Month(), nextDay.Day(), postTime, 0, 0, 1, time.UTC)
