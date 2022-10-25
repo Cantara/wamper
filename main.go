@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	log "github.com/cantara/bragi"
@@ -37,38 +38,56 @@ func main() {
 		log.StartRotate(done)
 		defer close(done)
 	}
+	postTime, err := strconv.Atoi(os.Getenv("post_time"))
+	if err != nil {
+		log.AddError(err).Fatal("missing integer for post time")
+	}
 	serv := web.Init()
 	slack.NewClient(os.Getenv("slack.token"))
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.WindowSize(1600, 1200),
-		chromedp.DisableGPU,
-	)
-	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer cancel()
 
-	ctx, cancel = chromedp.NewContext(ctx, chromedp.WithDebugf(log.Printf))
-	defer cancel()
-
-	img, err := GetScreenshotJenkins(ctx)
+	jenkinsimg, err := GetScreenshotJenkins()
 	if err != nil {
 		log.AddError(err).Fatal("while taking screenshot")
 	}
-	jenk := atomic.NewValue[[]byte](img)
+
+	jenk := atomic.NewValue[[]byte](jenkinsimg)
 	refreshJenkins := time.NewTicker(5 * time.Minute)
 	defer refreshJenkins.Stop()
 	go func() {
 		for range refreshJenkins.C {
-			img, err = GetScreenshotJenkins(ctx)
+			jenkinsimg, err = GetScreenshotJenkins()
 			if err != nil {
 				log.AddError(err).Error("while taking screenshot")
 				continue
 			}
-			jenk.Store(img)
+			jenk.Store(jenkinsimg)
 		}
 	}()
+
+	visualeimg, err := GetScreenshotVisuale()
+	if err != nil {
+		log.AddError(err).Fatal("while taking screenshot")
+	}
+
+	visuale := atomic.NewValue[[]byte](visualeimg)
+	refreshVisuale := time.NewTicker(5 * time.Minute)
+	defer refreshVisuale.Stop()
+	go func() {
+		if os.Getenv("visuale.pass") == "" {
+			return
+		}
+		for range refreshVisuale.C {
+			visualeimg, err = GetScreenshotVisuale()
+			if err != nil {
+				log.AddError(err).Error("while taking screenshot")
+				continue
+			}
+			visuale.Store(visualeimg)
+		}
+	}()
+
 	go func() {
 		nextDay := time.Now().UTC()
-		postTime := 6
 		//Changing to next day if we are passed the post time with a buffer of 10 sec.
 		if nextDay.Hour() >= postTime || nextDay.Hour() == postTime-1 && nextDay.Minute() == 59 && nextDay.Second() > 50 {
 			nextDay = nextDay.AddDate(0, 0, 1)
@@ -82,7 +101,7 @@ func main() {
 				dailyTicker.Reset(24 * time.Hour)
 				firstDay = false
 			}
-			log.Println(slack.SendFile(os.Getenv("slack.channel"), "Today's Jenkins build status!", img))
+			log.Println(slack.SendFile(os.Getenv("slack.channel"), "Today's Jenkins build status!", jenk.Load()))
 		}
 	}()
 	serv.API.GET("/image", func(c *gin.Context) {
@@ -94,7 +113,7 @@ func main() {
 			})
 			return
 		}
-		img, err := GetScreenshot(url, ctx)
+		img, err := GetScreenshot(url)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return
@@ -104,17 +123,58 @@ func main() {
 	serv.API.GET("/jenkins", func(c *gin.Context) {
 		c.Data(http.StatusOK, "png", jenk.Load())
 	})
+	serv.API.GET("/visuale", func(c *gin.Context) {
+		c.Data(http.StatusOK, "png", visuale.Load())
+	})
 
 	serv.Run()
 }
 
-func GetScreenshotJenkins(ctx context.Context) (buf []byte, err error) {
+func GetScreenshotJenkins() (buf []byte, err error) {
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.WindowSize(1600, 1200),
+		chromedp.DisableGPU,
+	)
+	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+
+	ctx, cancel = chromedp.NewContext(ctx) //, chromedp.WithDebugf(log.Printf))
+	defer cancel()
+
 	url := "https://jenkins." + os.Getenv("domain") + "." + os.Getenv("tld") +
 		"/view/" + os.Getenv("view") + "/"
 	err = chromedp.Run(ctx, fullScreenshotWAuth(url, 90, &buf))
 	return
 }
-func GetScreenshot(url string, ctx context.Context) (buf []byte, err error) {
+
+func GetScreenshotVisuale() (buf []byte, err error) {
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.WindowSize(1920, 1200),
+		chromedp.DisableGPU,
+	)
+	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+
+	ctx, cancel = chromedp.NewContext(ctx)
+	defer cancel()
+
+	url := "https://visuale." + os.Getenv("domain") + "." + os.Getenv("tld") +
+		"/?accessToken=" + os.Getenv("visuale.pass") + "&servicetype=true&ui_extension=groupByTag"
+	err = chromedp.Run(ctx, fullScreenshot(url, 90, &buf))
+	return
+}
+
+func GetScreenshot(url string) (buf []byte, err error) {
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.WindowSize(1600, 1200),
+		chromedp.DisableGPU,
+	)
+	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+
+	ctx, cancel = chromedp.NewContext(ctx)
+	defer cancel()
+
 	err = chromedp.Run(ctx, fullScreenshot(url, 90, &buf))
 	return
 }
