@@ -182,9 +182,17 @@ func GetScreenshot(url string) (buf []byte, err error) {
 type waiter struct {
 }
 
+func sleepContext(ctx context.Context, delay time.Duration) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-time.After(delay):
+		return nil
+	}
+}
+
 func (w waiter) Do(ctx context.Context) error {
-	time.Sleep(5 * time.Second)
-	return nil
+	return sleepContext(ctx, 5*time.Second)
 }
 
 func fullScreenshotWAuth(url string, quality int, res *[]byte) chromedp.Tasks {
