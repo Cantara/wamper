@@ -17,3 +17,6 @@
 
 *.png
 .env
+
+eventmap
+addSites.sh

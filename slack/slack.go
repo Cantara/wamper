@@ -69,18 +69,16 @@ type client struct {
 	token   string
 }
 
-var c client
-
-func NewClient(authToken string) (err error) {
+func NewClient(authToken string) (c client, err error) {
 	c = client{
 		baseurl: "https://slack.com",
 		token:   authToken,
 	}
-	return nil
+	return c, nil
 }
 
-func sendMessage(message, slackId, ts string) (resp slackRespons, err error) {
-	return resp, PostAuth(c.baseurl+"/api/chat.postMessage", slackMessage{
+func (c *client) sendMessage(message, slackId, ts string) (resp slackRespons, err error) {
+	return resp, c.PostAuth(c.baseurl+"/api/chat.postMessage", slackMessage{
 		SlackId: slackId,
 		TS:      ts,
 		Text:    ":ghost:" + message,
@@ -88,8 +86,8 @@ func sendMessage(message, slackId, ts string) (resp slackRespons, err error) {
 	}, &resp)
 }
 
-func SendFile(channel, message string, file []byte) (resp slackRespons, err error) {
-	return resp, PostFormAuth(c.baseurl+"/api/files.upload", slackFile{
+func (c *client) SendFile(channel, message string, file []byte) (resp slackRespons, err error) {
+	return resp, c.PostFormAuth(c.baseurl+"/api/files.upload", slackFile{
 		Channels: []string{channel},
 		Text:     message,
 		File:     file,
@@ -97,7 +95,7 @@ func SendFile(channel, message string, file []byte) (resp slackRespons, err erro
 	}, &resp)
 }
 
-func PostAuth(uri string, data interface{}, out interface{}) (err error) {
+func (c *client) PostAuth(uri string, data interface{}, out interface{}) (err error) {
 	jsonValue, _ := json.Marshal(data)
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(jsonValue))
@@ -119,7 +117,7 @@ func PostAuth(uri string, data interface{}, out interface{}) (err error) {
 	return
 }
 
-func PostFormAuth(uri string, file slackFile, out interface{}) (err error) {
+func (c *client) PostFormAuth(uri string, file slackFile, out interface{}) (err error) {
 	var b bytes.Buffer
 	mp := multipart.NewWriter(&b)
 	f, err := mp.CreateFormFile("file", file.Name)

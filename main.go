@@ -2,19 +2,22 @@ package main
 
 import (
 	"context"
-	"github.com/cantara/wamper/atomic"
-	"github.com/cantara/wamper/web"
+	"encoding/json"
+	"github.com/cantara/gober/store/eventstore"
+	"github.com/cantara/gober/store/inmemory"
+	"github.com/cantara/gober/stream"
+	"github.com/cantara/wamper/screenshot"
+	"github.com/cantara/wamper/sites"
+	"github.com/cantara/wamper/slack"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"net/http"
+	"net/url"
 	"os"
-	"strconv"
 	"time"
 
 	log "github.com/cantara/bragi"
-	"github.com/cantara/wamper/slack"
-	"github.com/chromedp/chromedp"
-	"github.com/chromedp/chromedp/kb"
-	"github.com/joho/godotenv"
+	"github.com/cantara/gober/webserver"
 )
 
 func loadEnv() {
@@ -38,178 +41,228 @@ func main() {
 		log.StartRotate(done)
 		defer close(done)
 	}
-	postTime, err := strconv.Atoi(os.Getenv("post_time"))
-	if err != nil {
-		log.AddError(err).Fatal("missing integer for post time")
-	}
-	serv := web.Init()
-	slack.NewClient(os.Getenv("slack.token"))
 
-	jenkinsimg, err := GetScreenshotJenkins()
-	if err != nil {
-		log.AddError(err).Fatal("while taking screenshot")
-	}
-
-	jenk := atomic.NewValue[[]byte](jenkinsimg)
-	refreshJenkins := time.NewTicker(5 * time.Minute)
-	defer refreshJenkins.Stop()
-	go func() {
-		for range refreshJenkins.C {
-			jenkinsimg, err = GetScreenshotJenkins()
-			if err != nil {
-				log.AddError(err).Error("while taking screenshot")
-				continue
-			}
-			jenk.Store(jenkinsimg)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	var st stream.Persistence
+	if os.Getenv("inmem") == "true" {
+		var err error
+		st, err = inmemory.Init()
+		if err != nil {
+			panic(err)
 		}
-	}()
-
-	visualeimg, err := GetScreenshotVisuale()
+	} else {
+		var err error
+		st, err = eventstore.Init()
+		if err != nil {
+			panic(err)
+		}
+	}
+	siteStream, err := stream.Init(st, "sites", ctx)
 	if err != nil {
-		log.AddError(err).Fatal("while taking screenshot")
+		log.AddError(err).Fatal("while initializing site stream")
+		return
+	}
+	siteStore, err := sites.Init(siteStream, ctx)
+	if err != nil {
+		log.AddError(err).Fatal("while initializing sites store")
+		return
+	}
+	scrStream, err := stream.Init(st, "screenshots", ctx)
+	if err != nil {
+		log.AddError(err).Fatal("while initializing site stream")
+		return
+	}
+	scrStore, err := screenshot.InitStore(scrStream, os.Getenv("screenshot.key"), ctx)
+	if err != nil {
+		log.AddError(err).Fatal("while initializing screenshot store")
+		return
+	}
+	scrService, err := screenshot.Init(scrStream, scrStore, os.Getenv("screenshot.service.key"), ctx)
+	if err != nil {
+		log.AddError(err).Fatal("while initializing screenshot store")
+		return
+	}
+	slackStream, err := stream.Init(st, "slack", ctx)
+	if err != nil {
+		log.AddError(err).Fatal("while initializing site stream")
+		return
+	}
+	slackService, err := slack.Init(slackStream, scrStore, os.Getenv("slack.service.key"), ctx)
+	if err != nil {
+		log.AddError(err).Fatal("while initializing screenshot store")
+		return
 	}
 
-	visuale := atomic.NewValue[[]byte](visualeimg)
-	refreshVisuale := time.NewTicker(5 * time.Minute)
-	defer refreshVisuale.Stop()
-	go func() {
-		if os.Getenv("visuale.pass") == "" {
+	serv := webserver.Init()
+	serv.API.PUT("/site", func(c *gin.Context) {
+		auth := webserver.GetAuthHeader(c)
+		if auth != os.Getenv("authkey") {
+			webserver.ErrorResponse(c, "not authenticated", http.StatusForbidden)
 			return
 		}
-		for range refreshVisuale.C {
-			visualeimg, err = GetScreenshotVisuale()
-			if err != nil {
-				log.AddError(err).Error("while taking screenshot")
-				continue
+		site, err := webserver.UnmarshalBody[Site](c)
+		if err != nil {
+			webserver.ErrorResponse(c, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if site.Jenkins {
+			if site.Username == "" {
+				webserver.ErrorResponse(c, "username for jenkins is missing", http.StatusBadRequest)
+				return
 			}
-			visuale.Store(visualeimg)
-		}
-	}()
-
-	go func() {
-		nextDay := time.Now().UTC()
-		//Changing to next day if we are passed the post time with a buffer of 10 sec.
-		if nextDay.Hour() >= postTime || nextDay.Hour() == postTime-1 && nextDay.Minute() == 59 && nextDay.Second() > 50 {
-			nextDay = nextDay.AddDate(0, 0, 1)
-		}
-		nextDay = time.Date(nextDay.Year(), nextDay.Month(), nextDay.Day(), postTime, 0, 0, 1, time.UTC)
-		nextDayIn := nextDay.Sub(time.Now().UTC())
-		dailyTicker := time.NewTicker(nextDayIn)
-		firstDay := true
-		for range dailyTicker.C {
-			if firstDay {
-				dailyTicker.Reset(24 * time.Hour)
-				firstDay = false
+			if site.Password == "" {
+				webserver.ErrorResponse(c, "password for jenkins is missing", http.StatusBadRequest)
+				return
 			}
-			log.Println(slack.SendFile(os.Getenv("slack.channel"), "Today's Jenkins build status!", jenk.Load()))
 		}
-	}()
-	serv.API.GET("/image", func(c *gin.Context) {
-		url, ok := c.GetQuery("url")
+		err = siteStore.Set(sites.Site{
+			Name:     site.Name,
+			Url:      *site.Url.Url(),
+			Jenkins:  site.Jenkins,
+			Username: site.Username,
+			Password: site.Password,
+		})
+		if err != nil {
+			webserver.ErrorResponse(c, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "site added"})
+		return
+	})
+	serv.API.GET("/site", func(c *gin.Context) {
+		name, ok := c.GetQuery("name")
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  "error",
-				"message": "url query not provided",
+				"message": "name query not provided",
 			})
 			return
 		}
-		img, err := GetScreenshot(url)
+		site, err := siteStore.Get(name)
 		if err != nil {
-			c.Status(http.StatusInternalServerError)
+			log.AddError(err).Info("site not found during get request", name)
+			webserver.ErrorResponse(c, "site not found", http.StatusNotFound)
 			return
 		}
-		c.Data(http.StatusOK, "png", img)
+		scr, err := scrStore.Get(site.Id())
+		if err != nil { //Here we could add / do some check on weather it is a not found error or any other error
+			log.AddError(err).Error("while getting screenshot during get request")
+			webserver.ErrorResponse(c, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		c.Data(http.StatusOK, "png", scr.Buf)
+		return
 	})
-	serv.API.GET("/jenkins", func(c *gin.Context) {
-		c.Data(http.StatusOK, "png", jenk.Load())
+	serv.API.PUT("/screenshot/task", func(c *gin.Context) {
+		auth := webserver.GetAuthHeader(c)
+		if auth != os.Getenv("authkey") {
+			webserver.ErrorResponse(c, "not authenticated", http.StatusForbidden)
+			return
+		}
+		task, err := webserver.UnmarshalBody[ScreenshotTask](c)
+		if err != nil {
+			webserver.ErrorResponse(c, err.Error(), http.StatusBadRequest)
+			return
+		}
+		log.Println(task)
+		log.Println(time.Now())
+		site, err := siteStore.Get(task.Site)
+		if err != nil {
+			log.AddError(err).Info("site not found during get request", task.Site)
+			webserver.ErrorResponse(c, "site not found", http.StatusBadRequest) //Personally feel I could use not found, but that is technically wrong
+			return
+		}
+
+		err = scrService.Set(screenshot.Task{
+			Site:     site,
+			Time:     task.Time,
+			Interval: task.Interval,
+		})
+		if err != nil {
+			webserver.ErrorResponse(c, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "screenshot task added"})
+		return
 	})
-	serv.API.GET("/visuale", func(c *gin.Context) {
-		c.Data(http.StatusOK, "png", visuale.Load())
+	serv.API.PUT("/slack/task", func(c *gin.Context) {
+		auth := webserver.GetAuthHeader(c)
+		if auth != os.Getenv("authkey") {
+			webserver.ErrorResponse(c, "not authenticated", http.StatusForbidden)
+			return
+		}
+		task, err := webserver.UnmarshalBody[SlackTask](c)
+		if err != nil {
+			webserver.ErrorResponse(c, err.Error(), http.StatusBadRequest)
+			return
+		}
+		site, err := siteStore.Get(task.Site)
+		if err != nil {
+			log.AddError(err).Info("site not found during get request", task.Site)
+			webserver.ErrorResponse(c, "site not found", http.StatusBadRequest) //Personally feel I could use not found, but that is technically wrong
+			return
+		}
+
+		err = slackService.Set(slack.Task{
+			Site:         site,
+			Time:         task.Time,
+			Interval:     task.Interval,
+			SlackToken:   task.SlackToken,
+			SlackChannel: task.SlackChannel,
+		})
+		if err != nil {
+			webserver.ErrorResponse(c, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "slack task added"})
+		return
 	})
 
 	serv.Run()
 }
 
-func GetScreenshotJenkins() (buf []byte, err error) {
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.WindowSize(1600, 1200),
-		chromedp.DisableGPU,
-	)
-	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer cancel()
-
-	ctx, cancel = chromedp.NewContext(ctx) //, chromedp.WithDebugf(log.Printf))
-	defer cancel()
-
-	url := "https://jenkins." + os.Getenv("domain") + "." + os.Getenv("tld") +
-		"/view/" + os.Getenv("view") + "/"
-	err = chromedp.Run(ctx, fullScreenshotWAuth(url, 90, &buf))
-	return
+type ScreenshotTask struct {
+	Site     string        `json:"site_name"`
+	Time     time.Time     `json:"time"`
+	Interval time.Duration `json:"interval"`
 }
 
-func GetScreenshotVisuale() (buf []byte, err error) {
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.WindowSize(1920, 1200),
-		chromedp.DisableGPU,
-	)
-	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer cancel()
-
-	ctx, cancel = chromedp.NewContext(ctx)
-	defer cancel()
-
-	url := "https://visuale." + os.Getenv("domain") + "." + os.Getenv("tld") +
-		"/?accessToken=" + os.Getenv("visuale.pass") + "&servicetype=true&ui_extension=groupByTag"
-	err = chromedp.Run(ctx, fullScreenshot(url, 90, &buf))
-	return
+type SlackTask struct {
+	Site         string        `json:"site_name"`
+	Time         time.Time     `json:"time"`
+	Interval     time.Duration `json:"interval"`
+	SlackToken   string        `json:"slack_token"`
+	SlackChannel string        `json:"slack_channel"`
 }
 
-func GetScreenshot(url string) (buf []byte, err error) {
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.WindowSize(1600, 1200),
-		chromedp.DisableGPU,
-	)
-	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer cancel()
-
-	ctx, cancel = chromedp.NewContext(ctx)
-	defer cancel()
-
-	err = chromedp.Run(ctx, fullScreenshot(url, 90, &buf))
-	return
+type Site struct {
+	Name     string `json:"name"`
+	Url      u      `json:"url"`
+	Jenkins  bool   `json:"jenkins"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
-type waiter struct {
-}
+type u url.URL
 
-func sleepContext(ctx context.Context, delay time.Duration) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-time.After(delay):
-		return nil
+func (i *u) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
 	}
+	ur, err := url.Parse(s)
+	if err != nil {
+		return err
+	}
+	*i = (u)(*ur)
+	return nil
 }
 
-func (w waiter) Do(ctx context.Context) error {
-	return sleepContext(ctx, 5*time.Second)
+func (i *u) MarshalJSON() ([]byte, error) {
+	return json.Marshal(i.Url().String())
 }
 
-func fullScreenshotWAuth(url string, quality int, res *[]byte) chromedp.Tasks {
-	return chromedp.Tasks{
-		chromedp.Navigate(url),
-		chromedp.WaitVisible(`j_username`, chromedp.ByID),
-		chromedp.SetValue(`j_username`, os.Getenv("user"), chromedp.ByID),
-		chromedp.SendKeys(`j_username`, kb.Tab+os.Getenv("pass")+kb.Enter, chromedp.ByID),
-		//chromedp.WaitReady("settings-toggle", chromedp.ByID),
-		waiter{},
-		chromedp.FullScreenshot(res, quality),
-	}
-}
-func fullScreenshot(url string, quality int, res *[]byte) chromedp.Tasks {
-	return chromedp.Tasks{
-		chromedp.Navigate(url),
-		waiter{},
-		chromedp.FullScreenshot(res, quality),
-	}
+func (i *u) Url() *url.URL {
+	return (*url.URL)(i)
 }
