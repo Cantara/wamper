@@ -3,7 +3,7 @@ module github.com/cantara/wamper
 go 1.19
 
 require (
-	github.com/cantara/bragi v0.6.2
+	github.com/cantara/bragi v0.6.3
 	github.com/cantara/gober v0.4.3
 	github.com/chromedp/chromedp v0.8.6
 	github.com/gin-gonic/gin v1.8.1
