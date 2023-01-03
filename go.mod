@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/cantara/bragi v0.6.3
-	github.com/cantara/gober v0.6.0
+	github.com/cantara/gober v0.7.2
 	github.com/chromedp/chromedp v0.8.6
 	github.com/gin-gonic/gin v1.8.1
 	github.com/joho/godotenv v1.4.0
