@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"time"
 
 	log "github.com/cantara/bragi"
@@ -44,6 +45,15 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	portString := os.Getenv("webserver.port")
+	port, err := strconv.Atoi(portString)
+	if err != nil {
+		log.AddError(err).Fatal("while getting webserver port")
+	}
+	serv, err := webserver.Init(uint16(port))
+	if err != nil {
+		log.AddError(err).Fatal("while initializing webserver")
+	}
 	var st stream.Persistence
 	if os.Getenv("inmem") == "true" {
 		var err error
@@ -73,7 +83,7 @@ func main() {
 		log.AddError(err).Fatal("while initializing site stream")
 		return
 	}
-	scrStore, err := screenshot.InitStore(scrStream, os.Getenv("screenshot.key"), ctx)
+	scrStore, err := screenshot.InitStore(serv, scrStream, os.Getenv("screenshot.key"), ctx)
 	if err != nil {
 		log.AddError(err).Fatal("while initializing screenshot store")
 		return
@@ -94,7 +104,6 @@ func main() {
 		return
 	}
 
-	serv := webserver.Init()
 	serv.API.PUT("/site", func(c *gin.Context) {
 		auth := webserver.GetAuthHeader(c)
 		if auth != os.Getenv("authkey") {

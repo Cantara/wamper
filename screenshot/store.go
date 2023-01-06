@@ -2,8 +2,11 @@ package screenshot
 
 import (
 	"context"
-	"github.com/cantara/gober/persistenteventmap"
+	"github.com/cantara/gober/persistentbigdata"
 	"github.com/cantara/gober/stream"
+	"github.com/cantara/gober/webserver"
+	"net/url"
+	"time"
 )
 
 type Store interface {
@@ -11,14 +14,21 @@ type Store interface {
 	Get(string) (Screenshot, error)
 }
 
-type store struct {
-	screenshots persistenteventmap.EventMap[Screenshot]
+type screenshotMeta struct {
+	Name      string    `json:"name"`
+	Url       url.URL   `json:"url"`
+	Type      string    `json:"type"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
-func InitStore(s stream.Stream, cryptoKey string, ctx context.Context) (out Store, err error) {
-	screenshots, err := persistenteventmap.Init[Screenshot](s, "screenshot", "0.1.0", func(key string) string {
+type store struct {
+	screenshots persistentbigmap.EventMap[Screenshot, screenshotMeta]
+}
+
+func InitStore(serv *webserver.Server, s stream.Stream, cryptoKey string, ctx context.Context) (out Store, err error) {
+	screenshots, err := persistentbigmap.Init[Screenshot, screenshotMeta](serv, s, "screenshot", "0.1.0", func(key string) string {
 		return cryptoKey
-	}, func(s Screenshot) string {
+	}, func(s screenshotMeta) string {
 		return s.Name //If a true id is used here. The screenshot database will just continuously increase in size without providing any real value
 	}, ctx)
 	if err != nil {
@@ -31,7 +41,12 @@ func InitStore(s stream.Stream, cryptoKey string, ctx context.Context) (out Stor
 }
 
 func (s *store) Set(scr Screenshot) (err error) {
-	err = s.screenshots.Set(scr)
+	err = s.screenshots.Set(scr, screenshotMeta{
+		Name:      scr.Name,
+		Url:       scr.Url,
+		Type:      scr.Type,
+		CreatedAt: scr.CreatedAt,
+	})
 	return
 }
 

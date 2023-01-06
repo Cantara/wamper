@@ -5,7 +5,7 @@ import (
 	log "github.com/cantara/bragi"
 	scheduletasks "github.com/cantara/gober/scheduletasks"
 	"github.com/cantara/gober/stream"
-	tasks "github.com/cantara/gober/taskssingle"
+	"github.com/cantara/gober/tasks"
 	"github.com/cantara/wamper/screenshot"
 	"github.com/cantara/wamper/sites"
 	"time"
@@ -40,7 +40,7 @@ func Init(s stream.Stream, scr screenshot.Store, cryptoKey string, ctx context.C
 		screenshots: scr,
 	}
 	t, err := tasks.Init[Task](s, "slack_task", "", cryptKeyProvider(cryptoKey), ctx)
-	tas, err := scheduletasks.Init[Task](s, t, "slack_schedule_task", "1.0.0", cryptKeyProvider(cryptoKey), ser.executeTask, ctx)
+	tas, err := scheduletasks.Init[Task](s, t, "slack_task", "1.0.0", cryptKeyProvider(cryptoKey), ser.executeTask, ctx)
 	if err != nil {
 		return
 	}
