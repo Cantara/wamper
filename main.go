@@ -50,6 +50,7 @@ func main() {
 	if err != nil {
 		log.AddError(err).Fatal("while getting webserver port")
 	}
+	webserver.Name = "wamper"
 	serv, err := webserver.Init(uint16(port))
 	if err != nil {
 		log.AddError(err).Fatal("while initializing webserver")
