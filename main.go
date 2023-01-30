@@ -19,6 +19,8 @@ import (
 
 	log "github.com/cantara/bragi"
 	"github.com/cantara/gober/webserver"
+
+	_ "net/http/pprof"
 )
 
 func loadEnv() {
@@ -29,6 +31,9 @@ func loadEnv() {
 }
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	loadEnv()
 	logDir := os.Getenv("log.dir")
 	if logDir != "" {

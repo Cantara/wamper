@@ -66,5 +66,5 @@ def testApp() {
 def buildApp(outFile, vers) {
     echo 'building the application...'
     sh 'ls'
-    sh "CGO_ENABLED=0 GOOD=linux GOARCH=amd64 go build -ldflags \"-X 'github.com/cantara/gober/webserver/health.Version=${vers}' -X 'github.com/cantara/gober/webserver/health.BuildTime=\$(date)' -X 'github.com/cantara/gober/webserver.Name=wamper'\" -o ${outFile}"
+    sh "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags \"-X 'github.com/cantara/gober/webserver/health.Version=${vers}' -X 'github.com/cantara/gober/webserver/health.BuildTime=\$(date)' -X 'github.com/cantara/gober/webserver.Name=wamper'\" -o ${outFile}"
 }
