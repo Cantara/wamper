@@ -5,7 +5,6 @@ import (
 	log "github.com/cantara/bragi"
 	scheduletasks "github.com/cantara/gober/scheduletasks"
 	"github.com/cantara/gober/stream"
-	"github.com/cantara/gober/tasks"
 	"github.com/cantara/wamper/sites"
 )
 
@@ -29,8 +28,8 @@ func Init(s stream.Stream, st Store, cryptoKey string, ctx context.Context) (out
 	ser := service{
 		store: st,
 	}
-	t, err := tasks.Init[sites.Site](s, "screenshot_task", "1.0.0", cryptKeyProvider(cryptoKey), ctx)
-	tas, err := scheduletasks.Init[sites.Site](s, t, "screenshot_schedule_task", "1.0.0", cryptKeyProvider(cryptoKey), ser.executeTask, ctx)
+	//t, err := tasks.Init[sites.Site](s, "screenshot_task", "1.0.0", cryptKeyProvider(cryptoKey), ctx)
+	tas, err := scheduletasks.Init[sites.Site](s, "screenshot_schedule_task", "1.0.0", cryptKeyProvider(cryptoKey), ser.executeTask, ctx)
 	if err != nil {
 		return
 	}
