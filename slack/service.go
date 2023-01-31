@@ -5,6 +5,7 @@ import (
 	log "github.com/cantara/bragi"
 	scheduletasks "github.com/cantara/gober/scheduletasks"
 	"github.com/cantara/gober/stream"
+	"github.com/cantara/gober/webserver/health"
 	"github.com/cantara/wamper/screenshot"
 	"github.com/cantara/wamper/sites"
 	"time"
@@ -63,7 +64,7 @@ func (s *service) executeTask(t Task) bool {
 		log.AddError(err).Error("while creating slack client during scheduled task execution")
 		return false
 	}
-	r, err := slack.SendFile(t.SlackChannel, "Today's Jenkins build status for "+t.Site.Name+"!", scr.Buf)
+	r, err := slack.SendFile(t.SlackChannel, "Today's Jenkins build status for "+t.Site.Name+"! From: "+health.GetOutboundIP().String(), scr.Buf)
 	if err != nil {
 		log.AddError(err).Error("while posting slack message during scheduled task execution")
 		return false
