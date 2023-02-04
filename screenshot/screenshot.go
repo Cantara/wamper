@@ -7,6 +7,7 @@ import (
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -24,10 +25,18 @@ type Task struct {
 	Interval time.Duration `json:"interval"`
 }
 
+var lock *sync.Mutex
+
+func init() {
+	lock = &sync.Mutex{}
+}
+
 func (s Screenshot) Id() string {
 	return fmt.Sprintf("%s_%s", s.Name, s.CreatedAt.Format("2006-01-02_15:04:05"))
 }
 func GetScreenshotJenkins(site sites.Site) (s Screenshot, err error) {
+	lock.Lock()
+	defer lock.Unlock()
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.WindowSize(1600, 1200),
 		chromedp.DisableGPU,
@@ -51,6 +60,8 @@ func GetScreenshotJenkins(site sites.Site) (s Screenshot, err error) {
 }
 
 func GetScreenshot(site sites.Site) (s Screenshot, err error) {
+	lock.Lock()
+	defer lock.Unlock()
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.WindowSize(1920, 1200),
 		chromedp.DisableGPU,

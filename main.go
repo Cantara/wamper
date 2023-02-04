@@ -10,7 +10,6 @@ import (
 	"github.com/cantara/wamper/sites"
 	"github.com/cantara/wamper/slack"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,35 +18,9 @@ import (
 
 	log "github.com/cantara/bragi"
 	"github.com/cantara/gober/webserver"
-
-	_ "net/http/pprof"
 )
 
-func loadEnv() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Error loading .env file: %s", err)
-	}
-}
-
 func main() {
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-	loadEnv()
-	logDir := os.Getenv("log.dir")
-	if logDir != "" {
-		log.SetPrefix("wamper")
-		cloaser := log.SetOutputFolder(logDir)
-		if cloaser == nil {
-			log.Fatal("Unable to sett logdir")
-		}
-		defer cloaser()
-		done := make(chan func())
-		log.StartRotate(done)
-		defer close(done)
-	}
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	portString := os.Getenv("webserver.port")

@@ -4,10 +4,9 @@ go 1.19
 
 require (
 	github.com/cantara/bragi v0.6.3
-	github.com/cantara/gober v0.10.1
+	github.com/cantara/gober v0.10.2
 	github.com/chromedp/chromedp v0.8.6
 	github.com/gin-gonic/gin v1.8.2
-	github.com/joho/godotenv v1.4.0
 )
 
 require (
@@ -32,6 +31,7 @@ require (
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.0 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
