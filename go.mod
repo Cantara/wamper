@@ -7,7 +7,7 @@ require (
 	github.com/cantara/gober v0.10.2
 	github.com/chromedp/chromedp v0.8.6
 	github.com/gin-gonic/gin v1.8.2
-	github.com/joho/godotenv v1.4.0
+	github.com/joho/godotenv v1.5.0
 )
 
 require (
