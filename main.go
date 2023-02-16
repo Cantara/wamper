@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github.com/cantara/gober/store/eventstore"
-	"github.com/cantara/gober/store/inmemory"
 	"github.com/cantara/gober/stream"
+	"github.com/cantara/gober/stream/event/store/eventstore"
+	"github.com/cantara/gober/stream/event/store/inmemory"
 	"github.com/cantara/wamper/screenshot"
 	"github.com/cantara/wamper/sites"
 	"github.com/cantara/wamper/slack"
@@ -32,33 +32,49 @@ func main() {
 	if err != nil {
 		log.AddError(err).Fatal("while initializing webserver")
 	}
-	var st stream.Persistence
-	if os.Getenv("inmem") == "true" {
-		var err error
-		st, err = inmemory.Init()
+	var siteStream stream.Stream
+	var scrStream stream.Stream
+	var slackStream stream.Stream
+	if esHost := os.Getenv("eventstore.host"); len(esHost) > 1 {
+		es, err := eventstore.NewClient(esHost)
 		if err != nil {
 			panic(err)
+		}
+		siteStream, err = eventstore.NewStream(es, "sites", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while initializing site stream")
+			return
+		}
+		scrStream, err = eventstore.NewStream(es, "screenshots", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while initializing site stream")
+			return
+		}
+		slackStream, err = eventstore.NewStream(es, "slack", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while initializing site stream")
+			return
 		}
 	} else {
-		var err error
-		st, err = eventstore.Init()
+		siteStream, err = inmemory.Init("sites", ctx)
 		if err != nil {
-			panic(err)
+			log.AddError(err).Fatal("while initializing site stream")
+			return
 		}
-	}
-	siteStream, err := stream.Init(st, "sites", ctx)
-	if err != nil {
-		log.AddError(err).Fatal("while initializing site stream")
-		return
+		scrStream, err = inmemory.Init("screenshots", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while initializing site stream")
+			return
+		}
+		slackStream, err = inmemory.Init("slack", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while initializing site stream")
+			return
+		}
 	}
 	siteStore, err := sites.Init(siteStream, ctx)
 	if err != nil {
 		log.AddError(err).Fatal("while initializing sites store")
-		return
-	}
-	scrStream, err := stream.Init(st, "screenshots", ctx)
-	if err != nil {
-		log.AddError(err).Fatal("while initializing site stream")
 		return
 	}
 	scrStore, err := screenshot.InitStore(serv, scrStream, os.Getenv("screenshot.key"), ctx)
@@ -69,11 +85,6 @@ func main() {
 	scrService, err := screenshot.Init(scrStream, scrStore, os.Getenv("screenshot.service.key"), ctx)
 	if err != nil {
 		log.AddError(err).Fatal("while initializing screenshot store")
-		return
-	}
-	slackStream, err := stream.Init(st, "slack", ctx)
-	if err != nil {
-		log.AddError(err).Fatal("while initializing site stream")
 		return
 	}
 	slackService, err := slack.Init(slackStream, scrStore, os.Getenv("slack.service.key"), ctx)
