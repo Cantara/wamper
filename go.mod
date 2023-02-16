@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/cantara/bragi v0.6.3
 	github.com/cantara/gober v0.13.3
-	github.com/chromedp/chromedp v0.8.6
+	github.com/chromedp/chromedp v0.8.7
 	github.com/gin-gonic/gin v1.8.2
 )
 
@@ -13,7 +13,7 @@ require (
 	github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96 // indirect
 	github.com/EventStore/EventStore-Client-Go v1.0.2 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
-	github.com/chromedp/cdproto v0.0.0-20221011223153-490dc4d81f7c // indirect
+	github.com/chromedp/cdproto v0.0.0-20230109101555-6b041c6303cc // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/ristretto v0.0.2 // indirect
