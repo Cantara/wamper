@@ -20,7 +20,8 @@ pipeline {
                     } else {
                         vers = "${env.GIT_COMMIT}"
                     }
-                    outFile = "wamper-${vers}"
+                    artifactId = "wamper"
+                    outFile = "${artifactId}-${vers}"
                     echo "New file: ${outFile}"
                 }
             }
@@ -47,11 +48,11 @@ pipeline {
                     echo 'deplying the application...'
                     echo "deploying version ${vers}"
                     if (release) {
-                        sh 'curl -v -u $NEXUS_CREDS '+"--upload-file ${outFile} https://mvnrepo.cantara.no/content/repositories/releases/no/cantara/gotools/wamper/${vers}/${outFile}"
+                        sh "find . -name '${outFile}-*' -type f -exec curl -v -u "+'$NEXUS_CREDS'+" --upload-file {} https://mvnrepo.cantara.no/content/repositories/releases/no/cantara/gotools/${artifactId}/${vers}/{}  \\;"
                     } else {
-                        sh 'curl -v -u $NEXUS_CREDS '+"--upload-file ${outFile} https://mvnrepo.cantara.no/content/repositories/snapshots/no/cantara/gotools/wamper/${vers}/${outFile}"
+                        sh "find . -name '${outFile}-*' -type f -exec curl -v -u "+'$NEXUS_CREDS'+" --upload-file {} https://mvnrepo.cantara.no/content/repositories/snapshots/no/cantara/gotools/${artifactId}/${vers}/${}  \\;"
                     }
-                    sh "rm ${outFile}"
+                    sh "rm ${outFile}-*"
                 }
             }
         }
@@ -66,5 +67,9 @@ def testApp() {
 def buildApp(outFile, vers) {
     echo 'building the application...'
     sh 'ls'
-    sh "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags \"-X 'github.com/cantara/gober/webserver/health.Version=${vers}' -X 'github.com/cantara/gober/webserver/health.BuildTime=\$(date)' -X 'github.com/cantara/gober/webserver.Name=wamper'\" -o ${outFile}"
+    buildFlags = "-X 'github.com/cantara/gober/webserver/health.Version=${vers}' -X 'github.com/cantara/gober/webserver/health.BuildTime=\$(date)' -X 'github.com/cantara/gober/webserver.Name=${artifactId'"
+    sh "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags \"${buildFlags}\" -o ${outFile}-linux-amd64"
+    sh "CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags \"${buildFlags}\" -o ${outFile}-linux-arm64"
+    sh "CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags \"${buildFlags}\" -o ${outFile}-darwin-amd64"
+    sh "CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags \"${buildFlags}\" -o ${outFile}-darwin-arm64"
 }
