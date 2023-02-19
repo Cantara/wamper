@@ -67,7 +67,7 @@ def testApp() {
 def buildApp(outFile, vers) {
     echo 'building the application...'
     sh 'ls'
-    buildFlags = "-X 'github.com/cantara/gober/webserver/health.Version=${vers}' -X 'github.com/cantara/gober/webserver/health.BuildTime=\$(date)' -X 'github.com/cantara/gober/webserver.Name=${artifactId'"
+    buildFlags = "-X 'github.com/cantara/gober/webserver/health.Version=${vers}' -X 'github.com/cantara/gober/webserver/health.BuildTime=\$(date)' -X 'github.com/cantara/gober/webserver.Name=${artifactId}'"
     sh "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags \"${buildFlags}\" -o ${outFile}-linux-amd64"
     sh "CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags \"${buildFlags}\" -o ${outFile}-linux-arm64"
     sh "CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags \"${buildFlags}\" -o ${outFile}-darwin-amd64"
