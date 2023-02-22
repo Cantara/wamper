@@ -2,6 +2,7 @@ package sites
 
 import (
 	"context"
+	log "github.com/cantara/bragi/sbragi"
 	"github.com/cantara/gober/persistenteventmap"
 	"github.com/cantara/gober/stream"
 	"net/url"
@@ -17,12 +18,10 @@ type storeService struct {
 	sites persistenteventmap.EventMap[Site]
 }
 
-var cryptKey = "MdgKIHmlbRszXjLbS7pXnSBdvl+SR1bSejtpFTQXxro="
+var cryptKey = log.RedactedString("MdgKIHmlbRszXjLbS7pXnSBdvl+SR1bSejtpFTQXxro=")
 
 func Init(st stream.Stream, ctx context.Context) (s Sites, err error) {
-	siteMap, err := persistenteventmap.Init[Site](st, "site", "0.1.0", func(key string) string {
-		return cryptKey
-	}, func(s Site) string {
+	siteMap, err := persistenteventmap.Init[Site](st, "site", "0.1.0", stream.StaticProvider(cryptKey), func(s Site) string {
 		return s.Id()
 	}, ctx)
 	if err != nil {
@@ -53,11 +52,11 @@ func (s *storeService) Get(id string) (o Site, err error) {
 }
 
 type Site struct {
-	Name     string  `json:"name"`
-	Url      url.URL `json:"url"`
-	Jenkins  bool    `json:"jenkins"`
-	Username string  `json:"username"`
-	Password string  `json:"password"`
+	Name     string             `json:"name"`
+	Url      url.URL            `json:"url"`
+	Jenkins  bool               `json:"jenkins"`
+	Username string             `json:"username"`
+	Password log.RedactedString `json:"password"`
 }
 
 func (s Site) Id() (out string) {

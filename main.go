@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/cantara/bragi"
+	log "github.com/cantara/bragi/sbragi"
 	"github.com/cantara/gober/webserver"
 )
 
@@ -26,11 +26,11 @@ func main() {
 	portString := os.Getenv("webserver.port")
 	port, err := strconv.Atoi(portString)
 	if err != nil {
-		log.AddError(err).Fatal("while getting webserver port")
+		log.WithError(err).Fatal("while getting webserver port")
 	}
 	serv, err := webserver.Init(uint16(port))
 	if err != nil {
-		log.AddError(err).Fatal("while initializing webserver")
+		log.WithError(err).Fatal("while initializing webserver")
 	}
 	var siteStream stream.Stream
 	var scrStream stream.Stream
@@ -42,54 +42,54 @@ func main() {
 		}
 		siteStream, err = eventstore.NewStream(es, "sites", ctx)
 		if err != nil {
-			log.AddError(err).Fatal("while initializing site stream")
+			log.WithError(err).Fatal("while initializing site stream")
 			return
 		}
 		scrStream, err = eventstore.NewStream(es, "screenshots", ctx)
 		if err != nil {
-			log.AddError(err).Fatal("while initializing site stream")
+			log.WithError(err).Fatal("while initializing site stream")
 			return
 		}
 		slackStream, err = eventstore.NewStream(es, "slack", ctx)
 		if err != nil {
-			log.AddError(err).Fatal("while initializing site stream")
+			log.WithError(err).Fatal("while initializing site stream")
 			return
 		}
 	} else {
 		siteStream, err = inmemory.Init("sites", ctx)
 		if err != nil {
-			log.AddError(err).Fatal("while initializing site stream")
+			log.WithError(err).Fatal("while initializing site stream")
 			return
 		}
 		scrStream, err = inmemory.Init("screenshots", ctx)
 		if err != nil {
-			log.AddError(err).Fatal("while initializing site stream")
+			log.WithError(err).Fatal("while initializing site stream")
 			return
 		}
 		slackStream, err = inmemory.Init("slack", ctx)
 		if err != nil {
-			log.AddError(err).Fatal("while initializing site stream")
+			log.WithError(err).Fatal("while initializing site stream")
 			return
 		}
 	}
 	siteStore, err := sites.Init(siteStream, ctx)
 	if err != nil {
-		log.AddError(err).Fatal("while initializing sites store")
+		log.WithError(err).Fatal("while initializing sites store")
 		return
 	}
-	scrStore, err := screenshot.InitStore(serv, scrStream, os.Getenv("screenshot.key"), ctx)
+	scrStore, err := screenshot.InitStore(serv, scrStream, log.RedactedString(os.Getenv("screenshot.key")), ctx)
 	if err != nil {
-		log.AddError(err).Fatal("while initializing screenshot store")
+		log.WithError(err).Fatal("while initializing screenshot store")
 		return
 	}
-	scrService, err := screenshot.Init(scrStream, scrStore, os.Getenv("screenshot.service.key"), ctx)
+	scrService, err := screenshot.Init(scrStream, scrStore, log.RedactedString(os.Getenv("screenshot.service.key")), ctx)
 	if err != nil {
-		log.AddError(err).Fatal("while initializing screenshot store")
+		log.WithError(err).Fatal("while initializing screenshot store")
 		return
 	}
-	slackService, err := slack.Init(slackStream, scrStore, os.Getenv("slack.service.key"), ctx)
+	slackService, err := slack.Init(slackStream, scrStore, log.RedactedString(os.Getenv("slack.service.key")), ctx)
 	if err != nil {
-		log.AddError(err).Fatal("while initializing screenshot store")
+		log.WithError(err).Fatal("while initializing screenshot store")
 		return
 	}
 
@@ -139,13 +139,13 @@ func main() {
 		}
 		site, err := siteStore.Get(name)
 		if err != nil {
-			log.AddError(err).Info("site not found during get request", name)
+			log.WithError(err).Info("site not found during get request", name)
 			webserver.ErrorResponse(c, "site not found", http.StatusNotFound)
 			return
 		}
 		scr, err := scrStore.Get(site.Id())
 		if err != nil { //Here we could add / do some check on weather it is a not found error or any other error
-			log.AddError(err).Error("while getting screenshot during get request")
+			log.WithError(err).Error("while getting screenshot during get request")
 			webserver.ErrorResponse(c, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -163,11 +163,10 @@ func main() {
 			webserver.ErrorResponse(c, err.Error(), http.StatusBadRequest)
 			return
 		}
-		log.Println(task)
-		log.Println(time.Now())
+		log.Info("new task", "task", task)
 		site, err := siteStore.Get(task.Site)
 		if err != nil {
-			log.AddError(err).Info("site not found during get request", task.Site)
+			log.WithError(err).Info("site not found during get request", task.Site)
 			webserver.ErrorResponse(c, "site not found", http.StatusBadRequest) //Personally feel I could use not found, but that is technically wrong
 			return
 		}
@@ -197,7 +196,7 @@ func main() {
 		}
 		site, err := siteStore.Get(task.Site)
 		if err != nil {
-			log.AddError(err).Info("site not found during get request", task.Site)
+			log.WithError(err).Info("site not found during get request", task.Site)
 			webserver.ErrorResponse(c, "site not found", http.StatusBadRequest) //Personally feel I could use not found, but that is technically wrong
 			return
 		}
@@ -227,19 +226,19 @@ type ScreenshotTask struct {
 }
 
 type SlackTask struct {
-	Site         string        `json:"site_name"`
-	Time         time.Time     `json:"time"`
-	Interval     time.Duration `json:"interval"`
-	SlackToken   string        `json:"slack_token"`
-	SlackChannel string        `json:"slack_channel"`
+	Site         string             `json:"site_name"`
+	Time         time.Time          `json:"time"`
+	Interval     time.Duration      `json:"interval"`
+	SlackToken   log.RedactedString `json:"slack_token"`
+	SlackChannel string             `json:"slack_channel"`
 }
 
 type Site struct {
-	Name     string `json:"name"`
-	Url      u      `json:"url"`
-	Jenkins  bool   `json:"jenkins"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Name     string             `json:"name"`
+	Url      u                  `json:"url"`
+	Jenkins  bool               `json:"jenkins"`
+	Username string             `json:"username"`
+	Password log.RedactedString `json:"password"`
 }
 
 type u url.URL

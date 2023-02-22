@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/cantara/bragi"
+	log "github.com/cantara/bragi/sbragi"
 )
 
 type slackMessage struct {
@@ -66,10 +66,10 @@ type BotProfile struct {
 
 type client struct {
 	baseurl string
-	token   string
+	token   log.RedactedString
 }
 
-func NewClient(authToken string) (c client, err error) {
+func NewClient(authToken log.RedactedString) (c client, err error) {
 	c = client{
 		baseurl: "https://slack.com",
 		token:   authToken,
@@ -100,7 +100,7 @@ func (c *client) PostAuth(uri string, data interface{}, out interface{}) (err er
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	resp, err := client.Do(req)
 	if err != nil || out == nil {
 		return
@@ -112,7 +112,7 @@ func (c *client) PostAuth(uri string, data interface{}, out interface{}) (err er
 	}
 	err = json.Unmarshal(body, out)
 	if err != nil {
-		log.AddError(err).Warning(fmt.Sprintf("%s\t%s", body, data))
+		log.WithError(err).Warning(fmt.Sprintf("%s\t%s", body, data))
 	}
 	return
 }
@@ -131,7 +131,7 @@ func (c *client) PostFormAuth(uri string, file slackFile, out interface{}) (err 
 	data.Set("initial_comment", file.Text)
 	req, err := http.NewRequest("POST", uri, &b)
 	req.Header.Set("Content-Type", mp.FormDataContentType())
-	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	req.URL.RawQuery = data.Encode()
 	cl := &http.Client{}
 	resp, err := cl.Do(req)
@@ -145,7 +145,7 @@ func (c *client) PostFormAuth(uri string, file slackFile, out interface{}) (err 
 	}
 	err = json.Unmarshal(body, out)
 	if err != nil {
-		log.AddError(err).Warning(fmt.Sprintf("%s\t%s", body, data))
+		log.WithError(err).Warning(fmt.Sprintf("%s\t%s", body, data))
 	}
 	return
 }

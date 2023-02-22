@@ -47,7 +47,7 @@ func GetScreenshotJenkins(site sites.Site) (s Screenshot, err error) {
 	ctx, cancel = chromedp.NewContext(ctx) //, chromedp.WithDebugf(log.Printf))
 	defer cancel()
 
-	err = chromedp.Run(ctx, fullScreenshotJenkins(site.Url, site.Username, site.Password, 90, &s.Buf))
+	err = chromedp.Run(ctx, fullScreenshotJenkins(site.Url, site.Username, string(site.Password), 90, &s.Buf))
 	if err != nil {
 		return
 	}

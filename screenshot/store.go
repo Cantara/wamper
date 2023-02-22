@@ -2,6 +2,7 @@ package screenshot
 
 import (
 	"context"
+	log "github.com/cantara/bragi/sbragi"
 	"github.com/cantara/gober/persistentbigdata"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/webserver"
@@ -25,10 +26,8 @@ type store struct {
 	screenshots persistentbigmap.EventMap[Screenshot, screenshotMeta]
 }
 
-func InitStore(serv *webserver.Server, s stream.Stream, cryptoKey string, ctx context.Context) (out Store, err error) {
-	screenshots, err := persistentbigmap.Init[Screenshot, screenshotMeta](serv, s, "screenshot", "0.1.0", func(key string) string {
-		return cryptoKey
-	}, func(s screenshotMeta) string {
+func InitStore(serv *webserver.Server, s stream.Stream, cryptoKey log.RedactedString, ctx context.Context) (out Store, err error) {
+	screenshots, err := persistentbigmap.Init[Screenshot, screenshotMeta](serv, s, "screenshot", "0.1.0", stream.StaticProvider(cryptoKey), func(s screenshotMeta) string {
 		return s.Name //If a true id is used here. The screenshot database will just continuously increase in size without providing any real value
 	}, ctx)
 	if err != nil {
