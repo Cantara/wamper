@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/cantara/bragi v0.6.7
-	github.com/cantara/gober v0.13.5
+	github.com/cantara/gober v0.14.0
 	github.com/chromedp/chromedp v0.8.7
 	github.com/gin-gonic/gin v1.9.0
 	github.com/playwright-community/playwright-go v0.2000.1
