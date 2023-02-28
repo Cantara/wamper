@@ -1,4 +1,6 @@
 name: Wamper
+service_type: A2A
+health_type: go
 dependencies:
   - eventstore
   - service
