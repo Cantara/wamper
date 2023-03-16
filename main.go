@@ -104,7 +104,7 @@ func main() {
 			webserver.ErrorResponse(c, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if site.Jenkins {
+		if site.LoginType != "" && site.LoginType != string(sites.None) {
 			if site.Username == "" {
 				webserver.ErrorResponse(c, "username for jenkins is missing", http.StatusBadRequest)
 				return
@@ -115,11 +115,11 @@ func main() {
 			}
 		}
 		err = siteStore.Set(sites.Site{
-			Name:     site.Name,
-			Url:      *site.Url.Url(),
-			Jenkins:  site.Jenkins,
-			Username: site.Username,
-			Password: site.Password,
+			Name:      site.Name,
+			Url:       *site.Url.Url(),
+			LoginType: sites.LoginType(site.LoginType),
+			Username:  site.Username,
+			Password:  site.Password,
 		})
 		if err != nil {
 			webserver.ErrorResponse(c, err.Error(), http.StatusInternalServerError)
@@ -234,11 +234,11 @@ type SlackTask struct {
 }
 
 type Site struct {
-	Name     string             `json:"name"`
-	Url      u                  `json:"url"`
-	Jenkins  bool               `json:"jenkins"`
-	Username string             `json:"username"`
-	Password log.RedactedString `json:"password"`
+	Name      string             `json:"name"`
+	Url       u                  `json:"url"`
+	LoginType string             `json:"login_type"`
+	Username  string             `json:"username"`
+	Password  log.RedactedString `json:"password"`
 }
 
 type u url.URL

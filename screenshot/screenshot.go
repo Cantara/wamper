@@ -34,30 +34,6 @@ func init() {
 func (s Screenshot) Id() string {
 	return fmt.Sprintf("%s_%s", s.Name, s.CreatedAt.Format("2006-01-02_15:04:05"))
 }
-func GetScreenshotJenkins(site sites.Site) (s Screenshot, err error) {
-	lock.Lock()
-	defer lock.Unlock()
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.WindowSize(1600, 1200),
-		chromedp.DisableGPU,
-	)
-	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer cancel()
-
-	ctx, cancel = chromedp.NewContext(ctx) //, chromedp.WithDebugf(log.Printf))
-	defer cancel()
-
-	err = chromedp.Run(ctx, fullScreenshotJenkins(site.Url, site.Username, string(site.Password), 90, &s.Buf))
-	if err != nil {
-		return
-	}
-
-	s.Name = site.Name
-	s.Url = site.Url
-	s.Type = "png"
-	s.CreatedAt = time.Now()
-	return
-}
 
 func GetScreenshot(site sites.Site) (s Screenshot, err error) {
 	lock.Lock()
@@ -72,7 +48,14 @@ func GetScreenshot(site sites.Site) (s Screenshot, err error) {
 	ctx, cancel = chromedp.NewContext(ctx)
 	defer cancel()
 
-	err = chromedp.Run(ctx, fullScreenshot(site.Url, 90, &s.Buf))
+	switch site.LoginType {
+	case sites.Jenkins:
+		err = chromedp.Run(ctx, fullScreenshotJenkins(site.Url, site.Username, string(site.Password), 90, &s.Buf))
+	case sites.Github:
+		err = chromedp.Run(ctx, fullScreenshotLoginField(site.Url, site.Username, string(site.Password), 90, &s.Buf))
+	default:
+		err = chromedp.Run(ctx, fullScreenshot(site.Url, 90, &s.Buf))
+	}
 	if err != nil {
 		return
 	}
@@ -106,6 +89,16 @@ func fullScreenshotJenkins(url url.URL, username, password string, quality int, 
 		chromedp.WaitVisible(`j_username`, chromedp.ByID),
 		chromedp.SetValue(`j_username`, username, chromedp.ByID),
 		chromedp.SendKeys(`j_username`, kb.Tab+password+kb.Enter, chromedp.ByID),
+		waiter{},
+		chromedp.FullScreenshot(res, quality),
+	}
+}
+func fullScreenshotLoginField(url url.URL, username, password string, quality int, res *[]byte) chromedp.Tasks {
+	return chromedp.Tasks{
+		chromedp.Navigate(url.String()),
+		chromedp.WaitVisible(`login_field`, chromedp.ByID),
+		chromedp.SetValue(`login_field`, username, chromedp.ByID),
+		chromedp.SendKeys(`login_field`, kb.Tab+password+kb.Enter, chromedp.ByID),
 		waiter{},
 		chromedp.FullScreenshot(res, quality),
 	}

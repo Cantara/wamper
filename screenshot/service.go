@@ -38,18 +38,10 @@ func (s *service) Set(t Task) error {
 func (s *service) executeTask(st sites.Site) bool {
 	var scr Screenshot
 	var err error
-	if st.Jenkins {
-		scr, err = GetScreenshotJenkins(st)
-		if err != nil {
-			log.WithError(err).Error("while taking jenkins screenshot during scheduled task execution")
-			return false
-		}
-	} else {
-		scr, err = GetScreenshot(st)
-		if err != nil {
-			log.WithError(err).Error("while taking screenshot during scheduled task execution")
-			return false
-		}
+	scr, err = GetScreenshot(st)
+	if err != nil {
+		log.WithError(err).Error("while taking screenshot during scheduled task execution")
+		return false
 	}
 	//Could add a check to see if the new picture differs a lot from the previous one. Thus, it would be possible to add a new task to post the screenshot.
 	err = s.store.Set(scr)

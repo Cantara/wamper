@@ -51,12 +51,20 @@ func (s *storeService) Get(id string) (o Site, err error) {
 	return s.sites.Get(id)
 }
 
+type LoginType string
+
+const (
+	None    LoginType = ""
+	Jenkins LoginType = "jenkins"
+	Github  LoginType = "github"
+)
+
 type Site struct {
-	Name     string             `json:"name"`
-	Url      url.URL            `json:"url"`
-	Jenkins  bool               `json:"jenkins"`
-	Username string             `json:"username"`
-	Password log.RedactedString `json:"password"`
+	Name      string             `json:"name"`
+	Url       url.URL            `json:"url"`
+	LoginType LoginType          `json:"jenkins"`
+	Username  string             `json:"username"`
+	Password  log.RedactedString `json:"password"`
 }
 
 func (s Site) Id() (out string) {
