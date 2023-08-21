@@ -2,8 +2,6 @@ module github.com/cantara/wamper
 
 go 1.21
 
-toolchain go1.21.0
-
 require (
 	github.com/cantara/bragi v0.7.2
 	github.com/cantara/gober v0.15.8
