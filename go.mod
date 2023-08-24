@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	github.com/cantara/bragi v0.7.1
+	github.com/cantara/bragi v0.7.2
 	github.com/cantara/gober v0.15.8
 	github.com/chromedp/chromedp v0.8.7
 	github.com/gin-gonic/gin v1.9.0
