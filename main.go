@@ -3,22 +3,28 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github.com/cantara/gober/stream"
-	"github.com/cantara/gober/stream/event/store/eventstore"
-	"github.com/cantara/gober/stream/event/store/inmemory"
-	"github.com/cantara/wamper/screenshot"
-	"github.com/cantara/wamper/sites"
-	"github.com/cantara/wamper/slack"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/cantara/gober/stream"
+	"github.com/cantara/gober/stream/event/store/eventstore"
+	"github.com/cantara/gober/stream/event/store/ondisk"
+	"github.com/cantara/gober/webserver/health"
+	"github.com/cantara/wamper/screenshot"
+	"github.com/cantara/wamper/sites"
+	"github.com/cantara/wamper/slack"
+	"github.com/gin-gonic/gin"
+
 	log "github.com/cantara/bragi/sbragi"
 	"github.com/cantara/gober/webserver"
 )
+
+func init() {
+	health.Name = "wamper"
+}
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -35,7 +41,7 @@ func main() {
 	var siteStream stream.Stream
 	var scrStream stream.Stream
 	var slackStream stream.Stream
-	if esHost := os.Getenv("eventstore.host"); len(esHost) > 1 {
+	if esHost := os.Getenv("eventstore.host"); esHost != "" {
 		es, err := eventstore.NewClient(esHost)
 		if err != nil {
 			panic(err)
@@ -56,17 +62,17 @@ func main() {
 			return
 		}
 	} else {
-		siteStream, err = inmemory.Init("sites", ctx)
+		siteStream, err = ondisk.Init("sites", ctx)
 		if err != nil {
 			log.WithError(err).Fatal("while initializing site stream")
 			return
 		}
-		scrStream, err = inmemory.Init("screenshots", ctx)
+		scrStream, err = ondisk.Init("screenshots", ctx)
 		if err != nil {
 			log.WithError(err).Fatal("while initializing site stream")
 			return
 		}
-		slackStream, err = inmemory.Init("slack", ctx)
+		slackStream, err = ondisk.Init("slack", ctx)
 		if err != nil {
 			log.WithError(err).Fatal("while initializing site stream")
 			return

@@ -1,11 +1,15 @@
 name: Wamper
 service_type: A2A
 health_type: go
-dependencies:
-  - eventstore
-  - service
+artifact:
+  id: wamper
+  group: no/cantara/gotools
 requirements:
   ram: 1GB
   disk: 5GB
   cpu: 1
-  properties: tmp.env
+  properties_name: .env
+  webserver_port_key: webserver.port
+  not_cluster_able: true
+  is_frontend: false
+  roles:
