@@ -3,12 +3,14 @@ package screenshot
 import (
 	"context"
 	"fmt"
-	"github.com/cantara/wamper/sites"
-	"github.com/chromedp/chromedp"
-	"github.com/chromedp/chromedp/kb"
 	"net/url"
 	"sync"
 	"time"
+
+	log "github.com/cantara/bragi/sbragi"
+	"github.com/cantara/wamper/sites"
+	"github.com/chromedp/chromedp"
+	"github.com/chromedp/chromedp/kb"
 )
 
 type Screenshot struct {
@@ -57,6 +59,7 @@ func GetScreenshot(site sites.Site) (s Screenshot, err error) {
 		err = chromedp.Run(ctx, fullScreenshot(site.Url, 90, &s.Buf))
 	}
 	if err != nil {
+		log.WithError(err).Error("while getting screenshot")
 		return
 	}
 
