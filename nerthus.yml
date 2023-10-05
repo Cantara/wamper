@@ -13,3 +13,4 @@ requirements:
   not_cluster_able: true
   is_frontend: false
   roles:
+    - chrome
