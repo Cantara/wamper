@@ -1,0 +1,31 @@
+package main
+
+templ index(name string, sites []string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<title>{ name }</title>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<link href="style.css" rel="stylesheet"/>
+			<script src="htmx.min.js"></script>
+			<script src="tailwindcss.min.js"></script>
+		</head>
+		<body>
+			<div class="content">
+				<div>
+					<h1>Image</h1>
+					<select name="site" hx-get="/image" hx-target="#image-result">
+						for _, s := range append([]string{""}, sites...) {
+							<option name={ s }>{ s }</option>
+						}
+					</select>
+					<button hx-get="/image/Cantara%20Jenkins" hx-swap="outerHTML" hx-target="#image-result" hx-indicator="#indicator" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">get</button>
+					<img id="indicator" class="htmx-indicator" src="/spinner.gif"/>
+					<div id="image-result"></div>
+				</div>
+			</div>
+		</body>
+	</html>
+}
+

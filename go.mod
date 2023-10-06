@@ -1,8 +1,9 @@
 module github.com/cantara/wamper
 
-go 1.21
+go 1.21.0
 
 require (
+	github.com/a-h/templ v0.2.364
 	github.com/cantara/bragi v0.7.2
 	github.com/cantara/gober v0.16.0
 	github.com/chromedp/chromedp v0.8.7
@@ -33,7 +34,6 @@ require (
 	github.com/gofrs/uuid v4.3.1+incompatible // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.0 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

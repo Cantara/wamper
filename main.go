@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -9,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/stream/event/store/eventstore"
 	"github.com/cantara/gober/stream/event/store/ondisk"
@@ -22,11 +24,15 @@ import (
 	"github.com/cantara/gober/webserver"
 )
 
+//go:embed static
+var staticFS embed.FS
+
 func init() {
 	health.Name = "wamper"
 }
 
 func main() {
+	wfs := http.FS(staticFS)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	portString := os.Getenv("webserver.port")
@@ -221,6 +227,34 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "slack task added"})
 		return
 	})
+
+	serv.Base.GET("", func(c *gin.Context) {
+		var s []string
+		siteStore.Range(func(data sites.Site) error {
+			s = append(s, data.Name)
+			return nil
+		})
+
+		templ.Handler(index(health.Name, s)).ServeHTTP(c.Writer, c.Request)
+	})
+	serv.Base.StaticFileFS("/style.css", "static/style.css", wfs)
+	serv.Base.StaticFileFS("/htmx.min.js", "static/htmx.min.js", wfs)
+	serv.Base.StaticFileFS("/tailwindcss.min.js", "static/tailwindcss.min.js", wfs)
+	serv.Base.GET("/image", func(c *gin.Context) {
+		site, ok := c.GetQuery("site")
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  "error",
+				"message": "name query not provided",
+			})
+			return
+		}
+		templ.Handler(image(site)).ServeHTTP(c.Writer, c.Request)
+	})
+	/*
+		serv.Base.GET("/sites", func(ctx *gin.Context) {
+		})
+	*/
 
 	serv.Run()
 }

@@ -1,0 +1,8 @@
+package main
+
+import "net/url"
+
+templ image(site string) {
+	<img id="image-result" width="100%" src={ "/wamper/site?name="+ url.QueryEscape(site) } alt="site image"/>
+}
+
