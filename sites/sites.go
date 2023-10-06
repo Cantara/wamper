@@ -2,10 +2,11 @@ package sites
 
 import (
 	"context"
+	"net/url"
+
 	log "github.com/cantara/bragi/sbragi"
 	"github.com/cantara/gober/persistenteventmap"
 	"github.com/cantara/gober/stream"
-	"net/url"
 )
 
 type Sites interface {
@@ -21,7 +22,7 @@ type storeService struct {
 var cryptKey = log.RedactedString("MdgKIHmlbRszXjLbS7pXnSBdvl+SR1bSejtpFTQXxro=")
 
 func Init(st stream.Stream, ctx context.Context) (s Sites, err error) {
-	siteMap, err := persistenteventmap.Init[Site](st, "site", "0.1.0", stream.StaticProvider(cryptKey), func(s Site) string {
+	siteMap, err := persistenteventmap.Init(st, "site", "0.1.0", stream.StaticProvider(cryptKey), func(s Site) string {
 		return s.Id()
 	}, ctx)
 	if err != nil {

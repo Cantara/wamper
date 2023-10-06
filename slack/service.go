@@ -2,13 +2,14 @@ package slack
 
 import (
 	"context"
+	"time"
+
 	log "github.com/cantara/bragi/sbragi"
 	scheduletasks "github.com/cantara/gober/scheduletasks"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/webserver/health"
 	"github.com/cantara/wamper/screenshot"
 	"github.com/cantara/wamper/sites"
-	"time"
 )
 
 type Task struct {
@@ -33,7 +34,7 @@ func Init(s stream.Stream, scr screenshot.Store, cryptoKey log.RedactedString, c
 		screenshots: scr,
 	}
 	//t, err := tasks.Init[Task](s, "slack_task", "", cryptKeyProvider(cryptoKey), ctx)
-	tas, err := scheduletasks.Init[Task](s, "slack_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, ctx)
+	tas, err := scheduletasks.Init(s, "slack_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, 10, ctx)
 	if err != nil {
 		return
 	}

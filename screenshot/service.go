@@ -23,7 +23,7 @@ func Init(s stream.Stream, st Store, cryptoKey log.RedactedString, ctx context.C
 		store: st,
 	}
 	//t, err := tasks.Init[sites.Site](s, "screenshot_task", "1.0.0", cryptKeyProvider(cryptoKey), ctx)
-	tas, err := scheduletasks.Init(s, "screenshot_schedule_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, ctx)
+	tas, err := scheduletasks.Init(s, "screenshot_schedule_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, 1, ctx)
 	if err != nil {
 		return
 	}
