@@ -5,7 +5,7 @@ go 1.21.0
 require (
 	github.com/a-h/templ v0.2.364
 	github.com/cantara/bragi v0.7.2
-	github.com/cantara/gober v0.16.1
+	github.com/cantara/gober v0.16.2
 	github.com/chromedp/chromedp v0.8.7
 	github.com/gin-gonic/gin v1.9.1
 )
