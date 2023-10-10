@@ -1,6 +1,8 @@
 package main
 
-templ index(name string, sites []string) {
+import scheduletasks "github.com/cantara/gober/scheduletasks"
+
+templ index(name string, sites []string, screenshotTasks []scheduletasks.TaskMetadata, slackTasks []scheduletasks.TaskMetadata) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -21,6 +23,18 @@ templ index(name string, sites []string) {
 					</select>
 					<div id="image-result"></div>
 				</div>
+				<h2>Screenshot Tasks</h2>
+				<ul>
+					for _, s := range screenshotTasks {
+						<li>Id: { s.Id.String() } After: { s.After.String() } Interval: { s.Interval.String() }</li>
+					}
+				</ul>
+				<h2>Slack Tasks</h2>
+				<ul>
+					for _, s := range slackTasks {
+						<li>Id: { s.Id.String() } After: { s.After.String() } Interval: { s.Interval.String() }</li>
+					}
+				</ul>
 			</div>
 		</body>
 	</html>

@@ -11,6 +11,7 @@ import (
 
 type Service interface {
 	Set(task Task) error
+	Tasks() []scheduletasks.TaskMetadata
 }
 
 type service struct {
@@ -34,6 +35,10 @@ func Init(s stream.Stream, st Store, cryptoKey log.RedactedString, ctx context.C
 
 func (s *service) Set(t Task) error {
 	return s.schedule.Create(t.Time, t.Interval, t.Site)
+}
+
+func (s *service) Tasks() []scheduletasks.TaskMetadata {
+	return s.schedule.Tasks()
 }
 
 func (s *service) executeTask(st sites.Site) bool {

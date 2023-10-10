@@ -235,7 +235,7 @@ func main() {
 			return nil
 		})
 
-		templ.Handler(index(health.Name, s)).ServeHTTP(c.Writer, c.Request)
+		templ.Handler(index(health.Name, s, scrService.Tasks(), slackService.Tasks())).ServeHTTP(c.Writer, c.Request)
 	})
 	serv.Base.StaticFileFS("/style.css", "static/style.css", wfs)
 	serv.Base.StaticFileFS("/htmx.min.js", "static/htmx.min.js", wfs)
