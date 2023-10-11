@@ -7,6 +7,7 @@ import (
 
 templ image(site string) {
 	if strings.TrimSpace(site) != "" {
+		<h2>{ site }</h2>
 		<img id="image-result" width="100%" src={ "/site?name="+ url.QueryEscape(site) } alt="site image"/>
 	}
 }

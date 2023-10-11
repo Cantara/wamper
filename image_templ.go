@@ -28,7 +28,16 @@ func image(site string) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if strings.TrimSpace(site) != "" {
-			_, err = templBuffer.WriteString("<img id=\"image-result\" width=\"100%\" src=\"")
+			_, err = templBuffer.WriteString("<h2>")
+			if err != nil {
+				return err
+			}
+			var var_2 string = site
+			_, err = templBuffer.WriteString(templ.EscapeString(var_2))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</h2> <img id=\"image-result\" width=\"100%\" src=\"")
 			if err != nil {
 				return err
 			}
