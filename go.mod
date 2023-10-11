@@ -6,7 +6,7 @@ require (
 	github.com/a-h/templ v0.2.364
 	github.com/cantara/bragi v0.7.2
 	github.com/cantara/gober v0.16.3
-	github.com/chromedp/chromedp v0.8.7
+	github.com/chromedp/chromedp v0.9.3
 	github.com/gin-gonic/gin v1.9.1
 )
 
@@ -16,7 +16,7 @@ require (
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
-	github.com/chromedp/cdproto v0.0.0-20230109101555-6b041c6303cc // indirect
+	github.com/chromedp/cdproto v0.0.0-20231011050154-1d073bb38998 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/ristretto v0.0.2 // indirect
@@ -29,7 +29,7 @@ require (
 	github.com/go-playground/validator/v10 v10.14.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/gobwas/ws v1.1.0 // indirect
+	github.com/gobwas/ws v1.3.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gofrs/uuid v4.3.1+incompatible // indirect
 	github.com/golang/mock v1.6.0 // indirect
