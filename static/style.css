@@ -46,6 +46,16 @@ body {
   border-radius: 1em;
 }
 
+.flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+button {
+  padding: .3em .6em .4em .6em;
+}
+
 table {
 	width: 100%;
 	border-collapse: collapse;

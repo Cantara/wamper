@@ -1,0 +1,23 @@
+package main
+
+import (
+  scheduletasks "github.com/cantara/gober/scheduletasks"
+)
+
+templ tasks(name string, tasks []scheduletasks.TaskMetadata) {
+	<table id={ name+"-tasks" }>
+		<tr>
+			<th>Id</th>
+			<th>After</th>
+			<th>Interval</th>
+		</tr>
+		for _, t := range tasks {
+			<tr>
+				<td>{ t.Id.String() }</td>
+				<td>{ t.After.String() }</td>
+				<td>{ t.Interval.String() }</td>
+			</tr>
+		}
+	</table>
+}
+

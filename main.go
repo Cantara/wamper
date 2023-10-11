@@ -164,6 +164,9 @@ func main() {
 		c.Data(http.StatusOK, "png", scr.Buf)
 		return
 	})
+	serv.Base.GET("/screenshot/tasks", func(c *gin.Context) {
+		templ.Handler(tasks("screenshot", scrService.Tasks())).ServeHTTP(c.Writer, c.Request)
+	})
 	serv.API.PUT("/screenshot/task", func(c *gin.Context) {
 		auth := webserver.GetAuthHeader(c)
 		if auth != os.Getenv("authkey") {
@@ -194,6 +197,9 @@ func main() {
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "screenshot task added"})
 		return
+	})
+	serv.Base.GET("/slack/tasks", func(c *gin.Context) {
+		templ.Handler(tasks("slack", slackService.Tasks())).ServeHTTP(c.Writer, c.Request)
 	})
 	serv.API.PUT("/slack/task", func(c *gin.Context) {
 		auth := webserver.GetAuthHeader(c)
@@ -250,6 +256,9 @@ func main() {
 			return
 		}
 		templ.Handler(image(site)).ServeHTTP(c.Writer, c.Request)
+	})
+	serv.Base.GET("/now", func(c *gin.Context) {
+		templ.Handler(now()).ServeHTTP(c.Writer, c.Request)
 	})
 	/*
 		serv.Base.GET("/sites", func(ctx *gin.Context) {

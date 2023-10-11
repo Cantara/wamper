@@ -1,8 +1,6 @@
 package main
 
 import (
-  "time"
-
   scheduletasks "github.com/cantara/gober/scheduletasks"
 )
 
@@ -27,37 +25,41 @@ templ index(name string, sites []string, screenshotTasks []scheduletasks.TaskMet
 					</select>
 					<div id="image-result"></div>
 				</div>
-				<h2>Now: { time.Now().UTC().String() }</h2>
-				<h2>Screenshot Tasks</h2>
-				<table>
-					<tr>
-						<th>Id</th>
-						<th>After</th>
-						<th>Interval</th>
-					</tr>
-					for _, s := range screenshotTasks {
-						<tr>
-							<td>{ s.Id.String() }</td>
-							<td>{ s.After.String() }</td>
-							<td>{ s.Interval.String() }</td>
-						</tr>
-					}
-				</table>
-				<h2>Slack Tasks</h2>
-				<table>
-					<tr>
-						<th>Id</th>
-						<th>After</th>
-						<th>Interval</th>
-					</tr>
-					for _, s := range slackTasks {
-						<tr>
-							<td>{ s.Id.String() }</td>
-							<td>{ s.After.String() }</td>
-							<td>{ s.Interval.String() }</td>
-						</tr>
-					}
-				</table>
+				<div class="flex">
+					@now()
+					<button
+ 						hx-get="/now"
+ 						hx-trigger="click"
+ 						hx-target="#now"
+ 						hx-swap="outerHTML"
+					>
+						Refresh!
+					</button>
+				</div>
+				<div class="flex">
+					<h2>Screenshot Tasks</h2>
+					<button
+ 						hx-get="/screenshot/tasks"
+ 						hx-trigger="click"
+ 						hx-target="#screenshot-tasks"
+ 						hx-swap="outerHTML"
+					>
+						Refresh!
+					</button>
+				</div>
+				@tasks("screenshot", screenshotTasks)
+				<div class="flex">
+					<h2>Slack Tasks</h2>
+					<button
+ 						hx-get="/slack/tasks"
+ 						hx-trigger="click"
+ 						hx-target="#slack-tasks"
+ 						hx-swap="outerHTML"
+					>
+						Refresh!
+					</button>
+				</div>
+				@tasks("slack", slackTasks)
 			</div>
 		</body>
 	</html>
