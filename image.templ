@@ -1,8 +1,13 @@
 package main
 
-import "net/url"
+import (
+	"net/url"
+	"strings"
+)
 
 templ image(site string) {
-	<img id="image-result" width="100%" src={ "/wamper/site?name="+ url.QueryEscape(site) } alt="site image"/>
+	if strings.TrimSpace(site) != "" {
+		<img id="image-result" width="100%" src={ "/site?name="+ url.QueryEscape(site) } alt="site image"/>
+	}
 }
 

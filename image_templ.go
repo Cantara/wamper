@@ -9,7 +9,10 @@ import "context"
 import "io"
 import "bytes"
 
-import "net/url"
+import (
+	"net/url"
+	"strings"
+)
 
 func image(site string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
@@ -24,17 +27,19 @@ func image(site string) templ.Component {
 			var_1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, err = templBuffer.WriteString("<img id=\"image-result\" width=\"100%\" src=\"")
-		if err != nil {
-			return err
-		}
-		_, err = templBuffer.WriteString(templ.EscapeString("/wamper/site?name=" + url.QueryEscape(site)))
-		if err != nil {
-			return err
-		}
-		_, err = templBuffer.WriteString("\" alt=\"site image\">")
-		if err != nil {
-			return err
+		if strings.TrimSpace(site) != "" {
+			_, err = templBuffer.WriteString("<img id=\"image-result\" width=\"100%\" src=\"")
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString(templ.EscapeString("/site?name=" + url.QueryEscape(site)))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("\" alt=\"site image\">")
+			if err != nil {
+				return err
+			}
 		}
 		if !templIsBuffer {
 			_, err = templBuffer.WriteTo(w)
