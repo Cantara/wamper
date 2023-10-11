@@ -1,6 +1,10 @@
 package main
 
-import scheduletasks "github.com/cantara/gober/scheduletasks"
+import (
+  "time"
+
+  scheduletasks "github.com/cantara/gober/scheduletasks"
+)
 
 templ index(name string, sites []string, screenshotTasks []scheduletasks.TaskMetadata, slackTasks []scheduletasks.TaskMetadata) {
 	<!DOCTYPE html>
@@ -23,18 +27,37 @@ templ index(name string, sites []string, screenshotTasks []scheduletasks.TaskMet
 					</select>
 					<div id="image-result"></div>
 				</div>
+				<h2>Now: { time.Now().UTC().String() }</h2>
 				<h2>Screenshot Tasks</h2>
-				<ul>
+				<table>
+					<tr>
+						<th>Id</th>
+						<th>After</th>
+						<th>Interval</th>
+					</tr>
 					for _, s := range screenshotTasks {
-						<li>Id: { s.Id.String() } After: { s.After.String() } Interval: { s.Interval.String() }</li>
+						<tr>
+							<td>{ s.Id.String() }</td>
+							<td>{ s.After.String() }</td>
+							<td>{ s.Interval.String() }</td>
+						</tr>
 					}
-				</ul>
+				</table>
 				<h2>Slack Tasks</h2>
-				<ul>
+				<table>
+					<tr>
+						<th>Id</th>
+						<th>After</th>
+						<th>Interval</th>
+					</tr>
 					for _, s := range slackTasks {
-						<li>Id: { s.Id.String() } After: { s.After.String() } Interval: { s.Interval.String() }</li>
+						<tr>
+							<td>{ s.Id.String() }</td>
+							<td>{ s.After.String() }</td>
+							<td>{ s.Interval.String() }</td>
+						</tr>
 					}
-				</ul>
+				</table>
 			</div>
 		</body>
 	</html>

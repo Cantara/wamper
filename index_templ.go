@@ -9,7 +9,11 @@ import "context"
 import "io"
 import "bytes"
 
-import scheduletasks "github.com/cantara/gober/scheduletasks"
+import (
+	"time"
+
+	scheduletasks "github.com/cantara/gober/scheduletasks"
+)
 
 func index(name string, sites []string, screenshotTasks []scheduletasks.TaskMetadata, slackTasks []scheduletasks.TaskMetadata) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
@@ -82,125 +86,163 @@ func index(name string, sites []string, screenshotTasks []scheduletasks.TaskMeta
 		if err != nil {
 			return err
 		}
-		var_6 := `Screenshot Tasks`
+		var_6 := `Now: `
 		_, err = templBuffer.WriteString(var_6)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</h2><ul>")
+		var var_7 string = time.Now().UTC().String()
+		_, err = templBuffer.WriteString(templ.EscapeString(var_7))
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</h2><h2>")
+		if err != nil {
+			return err
+		}
+		var_8 := `Screenshot Tasks`
+		_, err = templBuffer.WriteString(var_8)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</h2><table><tr><th>")
+		if err != nil {
+			return err
+		}
+		var_9 := `Id`
+		_, err = templBuffer.WriteString(var_9)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</th><th>")
+		if err != nil {
+			return err
+		}
+		var_10 := `After`
+		_, err = templBuffer.WriteString(var_10)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</th><th>")
+		if err != nil {
+			return err
+		}
+		var_11 := `Interval`
+		_, err = templBuffer.WriteString(var_11)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</th></tr>")
 		if err != nil {
 			return err
 		}
 		for _, s := range screenshotTasks {
-			_, err = templBuffer.WriteString("<li>")
+			_, err = templBuffer.WriteString("<tr><td>")
 			if err != nil {
 				return err
 			}
-			var_7 := `Id: `
-			_, err = templBuffer.WriteString(var_7)
-			if err != nil {
-				return err
-			}
-			var var_8 string = s.Id.String()
-			_, err = templBuffer.WriteString(templ.EscapeString(var_8))
-			if err != nil {
-				return err
-			}
-			_, err = templBuffer.WriteString(" ")
-			if err != nil {
-				return err
-			}
-			var_9 := `After: `
-			_, err = templBuffer.WriteString(var_9)
-			if err != nil {
-				return err
-			}
-			var var_10 string = s.After.String()
-			_, err = templBuffer.WriteString(templ.EscapeString(var_10))
-			if err != nil {
-				return err
-			}
-			_, err = templBuffer.WriteString(" ")
-			if err != nil {
-				return err
-			}
-			var_11 := `Interval: `
-			_, err = templBuffer.WriteString(var_11)
-			if err != nil {
-				return err
-			}
-			var var_12 string = s.Interval.String()
+			var var_12 string = s.Id.String()
 			_, err = templBuffer.WriteString(templ.EscapeString(var_12))
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</li>")
+			_, err = templBuffer.WriteString("</td><td>")
+			if err != nil {
+				return err
+			}
+			var var_13 string = s.After.String()
+			_, err = templBuffer.WriteString(templ.EscapeString(var_13))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</td><td>")
+			if err != nil {
+				return err
+			}
+			var var_14 string = s.Interval.String()
+			_, err = templBuffer.WriteString(templ.EscapeString(var_14))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</td></tr>")
 			if err != nil {
 				return err
 			}
 		}
-		_, err = templBuffer.WriteString("</ul><h2>")
+		_, err = templBuffer.WriteString("</table><h2>")
 		if err != nil {
 			return err
 		}
-		var_13 := `Slack Tasks`
-		_, err = templBuffer.WriteString(var_13)
+		var_15 := `Slack Tasks`
+		_, err = templBuffer.WriteString(var_15)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</h2><ul>")
+		_, err = templBuffer.WriteString("</h2><table><tr><th>")
+		if err != nil {
+			return err
+		}
+		var_16 := `Id`
+		_, err = templBuffer.WriteString(var_16)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</th><th>")
+		if err != nil {
+			return err
+		}
+		var_17 := `After`
+		_, err = templBuffer.WriteString(var_17)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</th><th>")
+		if err != nil {
+			return err
+		}
+		var_18 := `Interval`
+		_, err = templBuffer.WriteString(var_18)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</th></tr>")
 		if err != nil {
 			return err
 		}
 		for _, s := range slackTasks {
-			_, err = templBuffer.WriteString("<li>")
+			_, err = templBuffer.WriteString("<tr><td>")
 			if err != nil {
 				return err
 			}
-			var_14 := `Id: `
-			_, err = templBuffer.WriteString(var_14)
-			if err != nil {
-				return err
-			}
-			var var_15 string = s.Id.String()
-			_, err = templBuffer.WriteString(templ.EscapeString(var_15))
-			if err != nil {
-				return err
-			}
-			_, err = templBuffer.WriteString(" ")
-			if err != nil {
-				return err
-			}
-			var_16 := `After: `
-			_, err = templBuffer.WriteString(var_16)
-			if err != nil {
-				return err
-			}
-			var var_17 string = s.After.String()
-			_, err = templBuffer.WriteString(templ.EscapeString(var_17))
-			if err != nil {
-				return err
-			}
-			_, err = templBuffer.WriteString(" ")
-			if err != nil {
-				return err
-			}
-			var_18 := `Interval: `
-			_, err = templBuffer.WriteString(var_18)
-			if err != nil {
-				return err
-			}
-			var var_19 string = s.Interval.String()
+			var var_19 string = s.Id.String()
 			_, err = templBuffer.WriteString(templ.EscapeString(var_19))
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</li>")
+			_, err = templBuffer.WriteString("</td><td>")
+			if err != nil {
+				return err
+			}
+			var var_20 string = s.After.String()
+			_, err = templBuffer.WriteString(templ.EscapeString(var_20))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</td><td>")
+			if err != nil {
+				return err
+			}
+			var var_21 string = s.Interval.String()
+			_, err = templBuffer.WriteString(templ.EscapeString(var_21))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</td></tr>")
 			if err != nil {
 				return err
 			}
 		}
-		_, err = templBuffer.WriteString("</ul></div></body></html>")
+		_, err = templBuffer.WriteString("</table></div></body></html>")
 		if err != nil {
 			return err
 		}
