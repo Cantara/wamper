@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
+	"github.com/cantara/gober/consensus"
+	"github.com/cantara/gober/discovery/local"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/stream/event/store/eventstore"
 	"github.com/cantara/gober/stream/event/store/ondisk"
@@ -39,6 +41,11 @@ func main() {
 	port, err := strconv.Atoi(portString)
 	if err != nil {
 		log.WithError(err).Fatal("while getting webserver port")
+	}
+	token := "someTestToken"
+	p, err := consensus.Init(uint16(port)+1, token, local.New())
+	if err != nil {
+		log.WithError(err).Fatal("while initializing consensus")
 	}
 	serv, err := webserver.Init(uint16(port), true)
 	if err != nil {
@@ -94,18 +101,19 @@ func main() {
 		log.WithError(err).Fatal("while initializing screenshot store")
 		return
 	}
-	scrService, err := screenshot.Init(scrStream, scrStore, log.RedactedString(os.Getenv("screenshot.service.key")), ctx)
+	scrService, err := screenshot.Init(scrStream, p.AddTopic, scrStore, log.RedactedString(os.Getenv("screenshot.service.key")), ctx)
 	if err != nil {
 		log.WithError(err).Fatal("while initializing screenshot store")
 		return
 	}
-	slackService, err := slack.Init(slackStream, scrStore, log.RedactedString(os.Getenv("slack.service.key")), ctx)
+	slackService, err := slack.Init(slackStream, p.AddTopic, scrStore, log.RedactedString(os.Getenv("slack.service.key")), ctx)
 	if err != nil {
 		log.WithError(err).Fatal("while initializing screenshot store")
 		return
 	}
+	go p.Run()
 
-	serv.API.PUT("/site", func(c *gin.Context) {
+	serv.API().PUT("/site", func(c *gin.Context) {
 		auth := webserver.GetAuthHeader(c)
 		if auth != os.Getenv("authkey") {
 			webserver.ErrorResponse(c, "not authenticated", http.StatusForbidden)
@@ -140,7 +148,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "site added"})
 		return
 	})
-	serv.API.GET("/site", func(c *gin.Context) {
+	serv.API().GET("/site", func(c *gin.Context) {
 		name, ok := c.GetQuery("name")
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -164,10 +172,10 @@ func main() {
 		c.Data(http.StatusOK, "png", scr.Buf)
 		return
 	})
-	serv.Base.GET("/screenshot/tasks", func(c *gin.Context) {
+	serv.Base().GET("/screenshot/tasks", func(c *gin.Context) {
 		templ.Handler(tasks("screenshot", scrService.Tasks())).ServeHTTP(c.Writer, c.Request)
 	})
-	serv.API.PUT("/screenshot/task", func(c *gin.Context) {
+	serv.API().PUT("/screenshot/task", func(c *gin.Context) {
 		auth := webserver.GetAuthHeader(c)
 		if auth != os.Getenv("authkey") {
 			webserver.ErrorResponse(c, "not authenticated", http.StatusForbidden)
@@ -198,10 +206,10 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "screenshot task added"})
 		return
 	})
-	serv.Base.GET("/slack/tasks", func(c *gin.Context) {
+	serv.Base().GET("/slack/tasks", func(c *gin.Context) {
 		templ.Handler(tasks("slack", slackService.Tasks())).ServeHTTP(c.Writer, c.Request)
 	})
-	serv.API.PUT("/slack/task", func(c *gin.Context) {
+	serv.API().PUT("/slack/task", func(c *gin.Context) {
 		auth := webserver.GetAuthHeader(c)
 		if auth != os.Getenv("authkey") {
 			webserver.ErrorResponse(c, "not authenticated", http.StatusForbidden)
@@ -234,7 +242,7 @@ func main() {
 		return
 	})
 
-	serv.Base.GET("", func(c *gin.Context) {
+	serv.Base().GET("", func(c *gin.Context) {
 		var s []string
 		siteStore.Range(func(data sites.Site) error {
 			s = append(s, data.Name)
@@ -243,10 +251,10 @@ func main() {
 
 		templ.Handler(index(health.Name, s, scrService.Tasks(), slackService.Tasks())).ServeHTTP(c.Writer, c.Request)
 	})
-	serv.Base.StaticFileFS("/style.css", "static/style.css", wfs)
-	serv.Base.StaticFileFS("/htmx.min.js", "static/htmx.min.js", wfs)
-	serv.Base.StaticFileFS("/tailwindcss.min.js", "static/tailwindcss.min.js", wfs)
-	serv.Base.GET("/image", func(c *gin.Context) {
+	serv.Base().StaticFileFS("/style.css", "static/style.css", wfs)
+	serv.Base().StaticFileFS("/htmx.min.js", "static/htmx.min.js", wfs)
+	serv.Base().StaticFileFS("/tailwindcss.min.js", "static/tailwindcss.min.js", wfs)
+	serv.Base().GET("/image", func(c *gin.Context) {
 		site, ok := c.GetQuery("site")
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -257,7 +265,7 @@ func main() {
 		}
 		templ.Handler(image(site)).ServeHTTP(c.Writer, c.Request)
 	})
-	serv.Base.GET("/now", func(c *gin.Context) {
+	serv.Base().GET("/now", func(c *gin.Context) {
 		templ.Handler(now()).ServeHTTP(c.Writer, c.Request)
 	})
 	/*

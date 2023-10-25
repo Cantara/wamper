@@ -4,6 +4,7 @@ import (
 	"context"
 
 	log "github.com/cantara/bragi/sbragi"
+	"github.com/cantara/gober/consensus"
 	scheduletasks "github.com/cantara/gober/scheduletasks"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/wamper/sites"
@@ -19,12 +20,12 @@ type service struct {
 	store    Store
 }
 
-func Init(s stream.Stream, st Store, cryptoKey log.RedactedString, ctx context.Context) (out Service, err error) {
+func Init(s stream.Stream, consBuild consensus.ConsBuilderFunc, st Store, cryptoKey log.RedactedString, ctx context.Context) (out Service, err error) {
 	ser := service{
 		store: st,
 	}
 	//t, err := tasks.Init[sites.Site](s, "screenshot_task", "1.0.0", cryptKeyProvider(cryptoKey), ctx)
-	tas, err := scheduletasks.Init(s, "screenshot_schedule_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, 1, ctx)
+	tas, err := scheduletasks.Init(s, consBuild, "screenshot_schedule_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, 1, ctx)
 	if err != nil {
 		return
 	}

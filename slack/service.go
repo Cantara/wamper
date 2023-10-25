@@ -5,6 +5,7 @@ import (
 	"time"
 
 	log "github.com/cantara/bragi/sbragi"
+	"github.com/cantara/gober/consensus"
 	scheduletasks "github.com/cantara/gober/scheduletasks"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/webserver/health"
@@ -30,12 +31,12 @@ type service struct {
 	screenshots screenshot.Store
 }
 
-func Init(s stream.Stream, scr screenshot.Store, cryptoKey log.RedactedString, ctx context.Context) (out Service, err error) {
+func Init(s stream.Stream, consBuild consensus.ConsBuilderFunc, scr screenshot.Store, cryptoKey log.RedactedString, ctx context.Context) (out Service, err error) {
 	ser := service{
 		screenshots: scr,
 	}
 	//t, err := tasks.Init[Task](s, "slack_task", "", cryptKeyProvider(cryptoKey), ctx)
-	tas, err := scheduletasks.Init(s, "slack_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, 10, ctx)
+	tas, err := scheduletasks.Init(s, consBuild, "slack_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, 10, ctx)
 	if err != nil {
 		return
 	}
