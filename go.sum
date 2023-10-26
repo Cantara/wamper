@@ -21,8 +21,8 @@ github.com/bytedance/sonic v1.9.1 h1:6iJ6NqdoxCDr6mbY8h18oSO+cShGSMRGCEo7F2h0x8s
 github.com/bytedance/sonic v1.9.1/go.mod h1:i736AoUSYt75HyZLoJW9ERYxcy6eaN6h4BZXU064P/U=
 github.com/cantara/bragi v0.7.2 h1:jKDxuRSessMqYUjIU+mKr9FQ5RwhUiIGVWK3FdbyTD4=
 github.com/cantara/bragi v0.7.2/go.mod h1:btpJS4I5xGUohgnno50o8XD1qysPjozSrUzDjWr2W6Q=
-github.com/cantara/gober v0.18.0 h1:Vzulr6GAIIMQdOYJd0rHzLE3FcSpji+0JB+Sjoq1UJ8=
-github.com/cantara/gober v0.18.0/go.mod h1:Ol9D82Dwx8djdtRSrSuso/2GljqLb3pUXL8xkMmynz8=
+github.com/cantara/gober v0.18.1 h1:b2tQUgsyM1kF90rnxEe++b8lGjw0aczso7KlZxYpkjs=
+github.com/cantara/gober v0.18.1/go.mod h1:Ol9D82Dwx8djdtRSrSuso/2GljqLb3pUXL8xkMmynz8=
 github.com/cenkalti/backoff/v3 v3.0.0 h1:ske+9nBpD9qZsTBoF41nW5L+AIuFBKMeze18XQ3eG1c=
 github.com/cenkalti/backoff/v3 v3.0.0/go.mod h1:cIeZDE3IrqwwJl6VUwCN6trj1oXrTS4rc0ij+ULvLYs=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
