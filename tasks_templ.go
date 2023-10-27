@@ -70,7 +70,7 @@ func tasks(name string, tasks []scheduletasks.TaskMetadata) templ.Component {
 			if err != nil {
 				return err
 			}
-			var var_5 string = t.Id.String()
+			var var_5 string = t.Id
 			_, err = templBuffer.WriteString(templ.EscapeString(var_5))
 			if err != nil {
 				return err

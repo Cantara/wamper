@@ -36,7 +36,7 @@ func Init(s stream.Stream, consBuild consensus.ConsBuilderFunc, scr screenshot.S
 		screenshots: scr,
 	}
 	//t, err := tasks.Init[Task](s, "slack_task", "", cryptKeyProvider(cryptoKey), ctx)
-	tas, err := scheduletasks.Init(s, consBuild, "slack_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, 10, ctx)
+	tas, err := scheduletasks.Init(s, consBuild, "slack_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, time.Second*30, true, 10, ctx)
 	if err != nil {
 		return
 	}
@@ -46,7 +46,7 @@ func Init(s stream.Stream, consBuild consensus.ConsBuilderFunc, scr screenshot.S
 }
 
 func (s *service) Set(t Task) error {
-	return s.schedule.Create(t.Time, t.Interval, t)
+	return s.schedule.Create(t.Site.Name, t.Time, t.Interval, t)
 }
 
 func (s *service) Tasks() []scheduletasks.TaskMetadata {

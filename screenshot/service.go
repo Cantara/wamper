@@ -2,6 +2,7 @@ package screenshot
 
 import (
 	"context"
+	"time"
 
 	log "github.com/cantara/bragi/sbragi"
 	"github.com/cantara/gober/consensus"
@@ -25,7 +26,7 @@ func Init(s stream.Stream, consBuild consensus.ConsBuilderFunc, st Store, crypto
 		store: st,
 	}
 	//t, err := tasks.Init[sites.Site](s, "screenshot_task", "1.0.0", cryptKeyProvider(cryptoKey), ctx)
-	tas, err := scheduletasks.Init(s, consBuild, "screenshot_schedule_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, 1, ctx)
+	tas, err := scheduletasks.Init(s, consBuild, "screenshot_schedule_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, time.Second*10, true, 1, ctx)
 	if err != nil {
 		return
 	}
@@ -35,7 +36,7 @@ func Init(s stream.Stream, consBuild consensus.ConsBuilderFunc, st Store, crypto
 }
 
 func (s *service) Set(t Task) error {
-	return s.schedule.Create(t.Time, t.Interval, t.Site)
+	return s.schedule.Create(t.Site.Name, t.Time, t.Interval, t.Site)
 }
 
 func (s *service) Tasks() []scheduletasks.TaskMetadata {

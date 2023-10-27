@@ -1,7 +1,7 @@
 package main
 
 import (
-  scheduletasks "github.com/cantara/gober/scheduletasks"
+	scheduletasks "github.com/cantara/gober/scheduletasks"
 )
 
 templ tasks(name string, tasks []scheduletasks.TaskMetadata) {
@@ -13,11 +13,10 @@ templ tasks(name string, tasks []scheduletasks.TaskMetadata) {
 		</tr>
 		for _, t := range tasks {
 			<tr>
-				<td>{ t.Id.String() }</td>
+				<td>{ t.Id }</td>
 				<td>{ t.After.String() }</td>
 				<td>{ t.Interval.String() }</td>
 			</tr>
 		}
 	</table>
 }
-
