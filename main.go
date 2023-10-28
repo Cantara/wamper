@@ -34,6 +34,8 @@ func init() {
 }
 
 func main() {
+	//dl, _ := log.NewDebugLogger()
+	//dl.SetDefault()
 	wfs := http.FS(staticFS)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

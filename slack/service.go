@@ -53,7 +53,7 @@ func (s *service) Tasks() []scheduletasks.TaskMetadata {
 	return s.schedule.Tasks()
 }
 
-func (s *service) executeTask(t Task) bool {
+func (s *service) executeTask(t Task, _ context.Context) bool {
 	scr, err := s.screenshots.Get(t.Site.Id())
 	if err != nil {
 		log.WithError(err).Error("while getting screenshot during scheduled task execution")

@@ -43,7 +43,7 @@ func (s *service) Tasks() []scheduletasks.TaskMetadata {
 	return s.schedule.Tasks()
 }
 
-func (s *service) executeTask(st sites.Site) bool {
+func (s *service) executeTask(st sites.Site, _ context.Context) bool {
 	var scr Screenshot
 	var err error
 	scr, err = GetScreenshot(st)
