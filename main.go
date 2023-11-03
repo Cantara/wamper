@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/a-h/templ"
@@ -34,8 +35,10 @@ func init() {
 }
 
 func main() {
-	//dl, _ := log.NewDebugLogger()
-	//dl.SetDefault()
+	if v, ok := os.LookupEnv("log.debug"); ok && strings.ToLower(v) == "true" {
+		dl, _ := log.NewDebugLogger()
+		dl.SetDefault()
+	}
 	wfs := http.FS(staticFS)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
