@@ -26,7 +26,7 @@ func Init(s stream.Stream, consBuild consensus.ConsBuilderFunc, st Store, crypto
 		store: st,
 	}
 	//t, err := tasks.Init[sites.Site](s, "screenshot_task", "1.0.0", cryptKeyProvider(cryptoKey), ctx)
-	tas, err := scheduletasks.Init(s, consBuild, "screenshot_schedule_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, time.Second*10, true, 1, ctx)
+	tas, err := scheduletasks.Init(s, consBuild, "screenshot_schedule_task", "1.0.0", stream.StaticProvider(cryptoKey), ser.executeTask, time.Second*30, true, 1, ctx)
 	if err != nil {
 		return
 	}
