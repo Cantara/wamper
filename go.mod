@@ -3,9 +3,9 @@ module github.com/cantara/wamper
 go 1.21.0
 
 require (
-	github.com/a-h/templ v0.2.408
+	github.com/a-h/templ v0.2.432
 	github.com/cantara/bragi v0.7.4
-	github.com/cantara/gober v0.18.3
+	github.com/cantara/gober v0.18.4
 	github.com/chromedp/chromedp v0.9.3
 	github.com/gin-gonic/gin v1.9.1
 )
@@ -16,8 +16,8 @@ require (
 	github.com/bytedance/sonic v1.10.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
-	github.com/chenzhuoyu/iasm v0.9.0 // indirect
-	github.com/chromedp/cdproto v0.0.0-20231025043423-5615e204d422 // indirect
+	github.com/chenzhuoyu/iasm v0.9.1 // indirect
+	github.com/chromedp/cdproto v0.0.0-20231101223124-24f5925b5980 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
@@ -55,7 +55,7 @@ require (
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231030173426-d783a09b4405 // indirect
 	google.golang.org/grpc v1.59.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
