@@ -71,12 +71,12 @@ func main() {
 		}
 		scrStream, err = eventstore.NewStream(es, "screenshots", ctx)
 		if err != nil {
-			log.WithError(err).Fatal("while initializing site stream")
+			log.WithError(err).Fatal("while initializing screenshot stream")
 			return
 		}
 		slackStream, err = eventstore.NewStream(es, "slack", ctx)
 		if err != nil {
-			log.WithError(err).Fatal("while initializing site stream")
+			log.WithError(err).Fatal("while initializing slack stream")
 			return
 		}
 	} else {
@@ -87,12 +87,12 @@ func main() {
 		}
 		scrStream, err = ondisk.Init("screenshots", ctx)
 		if err != nil {
-			log.WithError(err).Fatal("while initializing site stream")
+			log.WithError(err).Fatal("while initializing screenshot stream")
 			return
 		}
 		slackStream, err = ondisk.Init("slack", ctx)
 		if err != nil {
-			log.WithError(err).Fatal("while initializing site stream")
+			log.WithError(err).Fatal("while initializing slack stream")
 			return
 		}
 	}
