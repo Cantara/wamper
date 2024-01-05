@@ -63,7 +63,7 @@ func (s *service) executeTask(t Task, _ context.Context) bool {
 		log.WithError(err).Error("while creating slack client during scheduled task execution")
 		return false
 	}
-	r, err := slack.SendFile(t.SlackChannel, "Today's "+t.Site.Name+"!", scr.Buf)
+	r, err := slack.SendFile(t.SlackChannel, "Today's "+t.Site.Name+"!\n"+t.Site.Url.String(), scr.Buf)
 	if err != nil {
 		log.WithError(err).Error("while posting slack message during scheduled task execution")
 		return false
