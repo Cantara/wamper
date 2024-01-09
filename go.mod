@@ -1,6 +1,6 @@
 module github.com/cantara/wamper
 
-go 1.21.5
+go 1.21.6
 
 require (
 	github.com/a-h/templ v0.2.513
