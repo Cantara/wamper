@@ -3,7 +3,7 @@ module github.com/cantara/wamper
 go 1.21.6
 
 require (
-	github.com/a-h/templ v0.2.513
+	github.com/a-h/templ v0.2.543
 	github.com/cantara/bragi v0.8.0
 	github.com/cantara/gober v0.18.7
 	github.com/chromedp/chromedp v0.9.3
