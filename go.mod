@@ -5,7 +5,7 @@ go 1.21.7
 require (
 	github.com/a-h/templ v0.2.543
 	github.com/cantara/bragi v0.8.0
-	github.com/cantara/gober v0.18.7
+	github.com/cantara/gober v0.18.8
 	github.com/chromedp/chromedp v0.9.5
 	github.com/gin-gonic/gin v1.9.1
 )
@@ -49,6 +49,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/arch v0.5.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
