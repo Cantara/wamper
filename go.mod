@@ -6,7 +6,7 @@ require (
 	github.com/a-h/templ v0.2.680
 	github.com/cantara/bragi v0.8.0
 	github.com/cantara/gober v0.18.8
-	github.com/chromedp/chromedp v0.9.5
+	github.com/chromedp/chromedp v0.11.0
 	github.com/gin-gonic/gin v1.9.1
 )
 
@@ -17,7 +17,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect
-	github.com/chromedp/cdproto v0.0.0-20240202021202-6d0b6a386732 // indirect
+	github.com/chromedp/cdproto v0.0.0-20241003230502-a4a8f7c660df // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
@@ -30,7 +30,7 @@ require (
 	github.com/go-playground/validator/v10 v10.15.5 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/gobwas/ws v1.3.2 // indirect
+	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang/glog v1.1.2 // indirect
@@ -54,7 +54,7 @@ require (
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/net v0.24.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231030173426-d783a09b4405 // indirect
 	google.golang.org/grpc v1.59.0 // indirect
