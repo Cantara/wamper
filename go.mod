@@ -8,7 +8,7 @@ require (
 	github.com/a-h/templ v0.2.793
 	github.com/cantara/bragi v0.8.0
 	github.com/cantara/gober v0.18.8
-	github.com/chromedp/chromedp v0.11.1
+	github.com/chromedp/chromedp v0.11.2
 	github.com/gin-gonic/gin v1.9.1
 )
 
